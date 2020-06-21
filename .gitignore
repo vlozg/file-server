@@ -1,0 +1,10 @@
+
+Client/.vs/Client/v16/
+Client/Debug/
+Server/.vs/Server/v16/
+Server/Debug/
+*.filters
+*.vcxproj
+*.user
+*.mp4
+*.sln

@@ -41,7 +41,6 @@ public:
 		res = buffer + 1;
 		if (!isString) 
 			memcpy(buf,buffer+1,size);
-		cout << size << endl;
 		if (buffer[0] == '0') {
 			return true; // not noti
 		}

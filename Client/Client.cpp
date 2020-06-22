@@ -7,11 +7,9 @@
 bool Client::Connect(string ipAddress) {
 	if (clientSocket.Connect(ipAddress) == SOCKET_ERROR)
 	{
-		clientSocket.Error("Connect fail!");
-		Disconnect();
-		WSACleanup();
 		return false;
 	}
+	isConnected = true;
 
 	bool outLoop = false;
 	while (!outLoop) {
@@ -19,15 +17,16 @@ bool Client::Connect(string ipAddress) {
 		case 1:
 			if (!SignIn()) {
 				UI.drawSignNotification(1);
-				
 			}else
 				outLoop = true;
 			break;
 		case 2:
 			if (!SignUp()) {
 				UI.drawSignNotification(2);
-				
 			}
+			break;
+		}
+		if (!isConnected) {
 			break;
 		}
 	}
@@ -63,6 +62,11 @@ bool Client::SignIn() {
 				return false;
 			}
 		}
+		else {
+			UI.drawNotification("Server isn't available !!! Try again later");
+			isConnected = false;
+			return false;
+		}
 	} while (1);
 	return false;
 }
@@ -90,6 +94,11 @@ bool Client::SignUp() {
 			else {
 				return false;
 			}
+		}
+		else {
+			UI.drawNotification("Server isn't available !!! Try again later");
+			isConnected = false;
+			return false;
 		}
 	} while (1);
 
@@ -131,7 +140,10 @@ int Client::SendFileToServer()
 	string fileDir;
 	// send signal flag to server
 	string notification = "Upload";
-	Send_s(clientSocket.GetSock(), notification, 0);
+	if (Send_s(clientSocket.GetSock(), notification, 0) == -1) {
+		isConnected = false; 
+		return -3; //server down
+	}
 	fileDir = InputFileToSend();
 
 	//Get file dir & art file transfering
@@ -196,7 +208,10 @@ int Client::GetFileFromServer()
 	string fileDB, input;
 
 	string notification = "Download";
-	Send_s(clientSocket.GetSock(), notification, 0);
+	if (Send_s(clientSocket.GetSock(), notification, 0) == SOCKET_ERROR) {
+		isConnected = false;
+		return -3; //server down
+	}
 
 	//Get file database from server
 	GetFile(fileDB, "");
@@ -244,7 +259,10 @@ int Client::GetFileFromServer()
 	buffer[i] = '\0';
 
 	int sendResult = Send(clientSocket.GetSock(), buffer, i + 1, 0);
-	if (sendResult == SOCKET_ERROR) return -1;
+	if (sendResult == SOCKET_ERROR) {
+		isConnected = false;
+		return -3; //server down
+	}
 
 	while (i > 0)
 	{
@@ -298,6 +316,9 @@ int Client::GetFile(string& fileName, const string& dir)
 	//Loop until file name received
 		
 	while (!CheckReceive(fileName, bytesReceived));
+	if (!isConnected) {
+		return -3;
+	}
 
 	//Get file size from client
 	long long int length = 0;
@@ -307,7 +328,9 @@ int Client::GetFile(string& fileName, const string& dir)
 
 	//Waiting for data
 	while (!CheckReceive(data, bytesReceived, FALSE, buffer));
-
+	if (!isConnected) {
+		return -3;
+	}
 	//Checking data
 	memcpy(&length, buffer, 8);
 	
@@ -327,7 +350,9 @@ int Client::GetFile(string& fileName, const string& dir)
 		ZeroMemory(buffer, BUFFER_SIZE);
 		//Waiting for data
 		while (!CheckReceive(data, bytesReceived, FALSE, buffer));
-
+		if (!isConnected) {
+			return -3;
+		}
 		if (length >= BUFFER_SIZE)
 			out.write(buffer, BUFFER_SIZE);
 		else
@@ -382,7 +407,10 @@ int Client::SendFile(const SOCKET& freceiver, const string& dir)
 
 	//Send file name
 	sendResult = Send_s(freceiver,GetFileName(dir), 0);
-	if (sendResult == SOCKET_ERROR) return -1;
+	if (sendResult == SOCKET_ERROR) {
+		isConnected = false;
+		return -3;
+	}
 
 	//Open file
 	ifstream file(dir, ifstream::binary);
@@ -396,15 +424,20 @@ int Client::SendFile(const SOCKET& freceiver, const string& dir)
 	//Send length
 	memcpy(buffer, &length, 8);
 	sendResult = Send(freceiver, buffer, 8, 0);
-	if (sendResult == SOCKET_ERROR) return -1;
-
+	if (sendResult == SOCKET_ERROR) {
+		isConnected = false;
+		return -3;
+	}
 	//Send file
 	while (length > 0)
 	{
 		ZeroMemory(buffer, BUFFER_SIZE);
 		file.read(buffer, BUFFER_SIZE);
 		sendResult = Send(freceiver, buffer, BUFFER_SIZE, 0);
-		if (sendResult == SOCKET_ERROR) return -1;
+		if (sendResult == SOCKET_ERROR) {
+			isConnected = false;
+			return -3;
+		}
 		length -= BUFFER_SIZE;
 	}
 

@@ -1,9 +1,10 @@
 #include "Client.h"
 
+
 void main()
 {
-	string ipAddress = "192.168.31.192";			// IP Address of the server
-	int port = 54000;						// Listening port # on the server
+	string ipAddress;			// IP Address of the server
+	int port;						// Listening port # on the server
 
 	// Initialize WinSock
 	WSAData data;
@@ -19,11 +20,40 @@ void main()
 	Client client;
 	bool LogIn = true;
 	int clientChoice;
+
+	//get server address and port
+	/*cout << "Server IP Address : ";
+	cin >> ipAddress;
+	cout << "Server port: ";
+	cin >> port;*/
+
+	ipAddress = "192.168.100.7";
+	port = 54000;
+
 	client.Create(port);
+	int rec;
+reconnect: 
 	if (!client.Connect(ipAddress)) {
-		cout << "Quitting !!! " << endl;
+		std::cout << "Server is not currently available !!!\n Do you want to reconnect ? (1: yes, 2: no): ";
+		
+	retype:
+		std::cin >> rec;
+		switch (rec) {
+		case 2:
+			return;
+		case 1:
+			goto reconnect;
+			break;
+		default:
+			std::cout << "Wrong input!!! Type again" << endl;
+			goto retype;
+			break;
+		}
 	}
 
+	if (!client.IsConnected())
+		goto reconnect;
+	
 	//Main loop
 	while (1) {
 		if (!LogIn) {
@@ -31,7 +61,8 @@ void main()
 			client.Connect(ipAddress);
 			LogIn = true;
 		}
-		
+		if (!client.IsConnected())
+			goto reconnect;
 		cout << "1. Upload a file to server !!! " << endl;
 		cout << "2. Download a file from server !!! " << endl;
 		cout << "3. Sign Out !!! " << endl;
@@ -58,14 +89,16 @@ void main()
 			break;
 		default:
 			cout << "Input is not valid !!! Try again in 1s !!!" << endl;
-			system("clrscr");
+			client.UIReset();
 			continue;
 		}
+		if (!client.IsConnected())
+			goto reconnect;
 		cout << "Do u want to continue ? (1: yes, 2: no): ";
 		cin >> clientChoice;
 		switch (clientChoice) {
 		case 1:
-			system("clrscr");
+			client.UIReset();
 			continue;
 		case 2:
 			// Gracefully close down everything

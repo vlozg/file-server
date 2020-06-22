@@ -8,9 +8,18 @@ int Send(SOCKET receiver, const char* buffer, int32_t size, int flag)
 	sendResult = send(receiver, (char*)&size, sizeof(size), flag);
 	if (sendResult == SOCKET_ERROR)
 		return sendResult;
-	sendResult = send(receiver, buffer, size, flag);
-	if (sendResult == SOCKET_ERROR)
-		return sendResult;
+
+	//Send buffer based on size
+	int bytesSent = 0;
+	do
+	{
+		//Must add the number of sent bytes
+		sendResult = send(receiver, buffer + bytesSent, size - bytesSent, flag);
+		if (sendResult == SOCKET_ERROR)
+			return sendResult;
+
+		bytesSent += sendResult;	//Add up the number of sent bytes
+	} while (bytesSent < size);
 
 	return size;
 }
@@ -27,10 +36,18 @@ int Send_s(SOCKET receiver, const string& buffer, int flag)
 	sendResult = send(receiver, (char*)&size, sizeof(size), flag);
 	if (sendResult == SOCKET_ERROR)
 		return sendResult;
-	sendResult = send(receiver, buffer.c_str(), size, flag);
-	if (sendResult == SOCKET_ERROR)
-		return sendResult;
 
+	//Send buffer based on size
+	int bytesSent = 0;
+	do
+	{
+		//Must add the number of sent bytes
+		sendResult = send(receiver, buffer.c_str() + bytesSent, size - bytesSent, flag);
+		if (sendResult == SOCKET_ERROR)
+			return sendResult;
+
+		bytesSent += sendResult;	//Add up the number of sent bytes
+	} while (bytesSent < size);
 	return size;
 }
 

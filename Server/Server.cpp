@@ -53,6 +53,14 @@ int Server::UserValidation(string username,string password) {
 			check = -1;
 		}
 	}
+	for (int i = 0; i < onlineConnection.size(); i++)
+	{
+		if (onlineConnection[i].GetUsername() == username)
+		{
+			check = 0;
+			break;
+		}
+	}
 	fin.close();
 	return check;					//check = 1 Sign in success, check = 0 or - 1 sign in fail, check = -1 username exists
 }

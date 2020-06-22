@@ -34,6 +34,7 @@ void HandleConnection(SOCKET clientSocket) {
 	client.SetSOCKET(clientSocket);
 
 	bool clientDisconnect = false;
+	bool signIn = false;
 
 	while (1) {
 		ZeroMemory(buffer, BUFFER_SIZE);
@@ -41,7 +42,8 @@ void HandleConnection(SOCKET clientSocket) {
 		// wait for client to send data
 		int bytesReceived = Recv(clientSocket, buffer,BUFFER_SIZE,0);
 		if (bytesReceived == SOCKET_ERROR) {
-			myServer.ClientDisconnectLog(client);
+			if (signIn)
+				myServer.ClientDisconnectLog(client);
 			return;
 		}
 
@@ -51,6 +53,7 @@ void HandleConnection(SOCKET clientSocket) {
 		switch (HandleFlagSignal(notification)) {
 		case 1:
 			myServer.SignIn(client);
+			signIn = true;
 			break;
 		case 2:
 			myServer.SignUp(client);
@@ -62,6 +65,8 @@ void HandleConnection(SOCKET clientSocket) {
 			myServer.SendFileToClient(client);
 			break;
 		case 5:
+			myServer.ClientDisconnectLog(client);
+			clientDisconnect = true;
 			break;
 		default:
 			myServer.ClientDisconnectLog(client);

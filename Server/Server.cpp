@@ -20,10 +20,10 @@ void Server::SignIn(Client &client) {
 	int signInResult = UserValidation(username, password);		//Confirm info
 
 	if (signInResult == 1) {									//send result to client
-		SendNoti(username + " connect to server");
+		SendNoti(username + " log in to server");
 		Send(clientSocket.GetSock(), "01", 2, 0);
 		onlineConnection.push_back(client);
-		c.drawLog(username + " connect to server\n");
+		c.drawLog(username + " log in to server\n");
 		listOnlineUser();
 		
 	}
@@ -123,7 +123,7 @@ int Server::GetFileFromClient(Client &client)
 	{
 	case 1:
 		UpdateDB(fileName);
-		c.drawLog(client.GetUsername() + " uploaded a file!!!\n");
+		c.drawLog(client.GetUsername() + " uploaded file " + fileName + "!!!\n");
 		return 1;
 	case -1:
 		return -1;
@@ -185,7 +185,6 @@ int Server::SendFileToClient(Client& client)
 	vector<string> fileDir;
 	SOCKET clientSocket;
 	clientSocket = client.GetSocket().GetSock();
-	//c.drawLog(client.GetUsername() + " download a file!!!");
 
 	//Get file dir & name
 	fileDir = InputFileToSend(clientSocket);
@@ -200,7 +199,8 @@ int Server::SendFileToClient(Client& client)
 		switch (err)
 		{
 		case 1:
-			c.drawNotification("Sent a file to client!!!\n");
+			c.drawNotification("File sent succesfully !!!\n");
+			c.drawLog(client.GetUsername() + " donwload file " + fileDir[i]);
 			break;
 		case -1:
 			return -1;
@@ -337,6 +337,7 @@ int Server::SendFileForServer(const SOCKET& freceiver, const string& dir)
 	int sendResult, bytesReceived;
 	long long int length;
 
+	//header 
 	string filename = "0" + GetFileNameForServer(dir);
 
 	//Send file name
@@ -355,6 +356,7 @@ int Server::SendFileForServer(const SOCKET& freceiver, const string& dir)
 
 	//Send length
 	memcpy(buffer+1, &length, 8);
+	//header 
 	buffer[0] = '0';
 	sendResult = Send(freceiver, buffer, 8+1, 0);
 	if (sendResult == SOCKET_ERROR) return -1;
@@ -364,6 +366,7 @@ int Server::SendFileForServer(const SOCKET& freceiver, const string& dir)
 	{
 		ZeroMemory(buffer, BUFFER_SIZE);
 		file.read(buffer+1, BUFFER_SIZE-1);
+		//header 
 		buffer[0] = '0';
 		sendResult = Send(freceiver, buffer, BUFFER_SIZE, 0);
 		if (sendResult == SOCKET_ERROR) return -1;

@@ -72,10 +72,10 @@ public:
 				break;
 			}
 		}
-		c.drawLog(client.GetUsername() + " disconnected !!!\n");
+		c.drawLog(client.GetUsername() + " log off !!!\n");
 		c.resetCursorListOnlineUser();
 		listOnlineUser();
-		SendNoti(client.GetUsername() + " disconnected !!!");
+		SendNoti(client.GetUsername() + " log off !!!");
 	}
 	
 	void listOnlineUser() {
@@ -91,6 +91,9 @@ public:
 	}
 
 	Server() {	};
-	~Server() {};
+	~Server() {
+		SendNoti("Server down !!! Disconect all client !!!");
+		Shutdown();
+	};
 };
 

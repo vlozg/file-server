@@ -146,6 +146,9 @@ vector<string> Server::InputFileToSend(const SOCKET& client)
 {
 	char buffer[BUFFER_SIZE];
 	vector<string> choices, listFile;
+	
+	//check database before send to client
+	DataBaseScan();
 	//Send file database for client to choose
 	SendFileForServer(client, FILE_DB);
 

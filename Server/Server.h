@@ -32,6 +32,8 @@ public:
 		serverSocket.Bind();
 
 		serverSocket.Listen();
+
+		DataBaseScan();
 	}
 
 	void SignIn(Client&);
@@ -83,6 +85,24 @@ public:
 		for (int i = 0; i < onlineConnection.size(); i++) {
 			c.drawListOnlineUsers(onlineConnection[i].GetUsername());
 		}
+	}
+
+	void DataBaseScan() {
+		string file;
+		ifstream db(FILE_DB); //open database
+		// open temp file
+		ofstream temp("temp.txt");
+		while (getline(db, file)) {
+			ifstream f(file);
+			//write the name to temp if file exists
+			if (f.good()) {
+				temp << file << endl;
+			}
+		}
+		temp.close();
+		db.close();
+		remove(FILE_DB);
+		rename("temp.txt", FILE_DB);
 	}
 
 

@@ -216,7 +216,6 @@ int Client::GetFileFromServer()
 
 	//Get file database from server
 	GetFile(fileDB, "");
-	fileDB = fileDB;
 	ifstream db(fileDB);
 
 	//Get wanted files
@@ -232,6 +231,7 @@ int Client::GetFileFromServer()
 		cout << choices.size() << ". " << temp << "\n";
 	}
 	db.close();
+	remove(fileDB.c_str());	//Remove db file in client after reading data success
 
 	cout << "> ";
 	cin >> ws;

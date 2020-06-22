@@ -7,6 +7,7 @@
 bool Client::Connect(string ipAddress) {
 	if (clientSocket.Connect(ipAddress) == SOCKET_ERROR)
 	{
+		clientSocket.Disconnect();
 		return false;
 	}
 	isConnected = true;

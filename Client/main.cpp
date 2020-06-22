@@ -27,12 +27,12 @@ void main()
 	cout << "Server port: ";
 	cin >> port;*/
 
-	ipAddress = "192.168.100.7";
+	ipAddress = "192.168.31.192";
 	port = 54000;
 
-	client.Create(port);
 	int rec;
-reconnect: 
+reconnect:
+	client.Create(port);
 	if (!client.Connect(ipAddress)) {
 		std::cout << "Server is not currently available !!!\n Do you want to reconnect ? (1: yes, 2: no): ";
 		

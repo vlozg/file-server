@@ -109,4 +109,5 @@ public:
 int Send(SOCKET receiver, const char* buffer, int32_t size, int flag);
 int Send_s(SOCKET receiver, const string& buffer, int flag);
 int Recv(SOCKET sender, char* buffer, int32_t size, int flag);
+string GetFileName(const string& dir);
 int SendFile(const SOCKET& freceiver, const string& dir);

@@ -354,11 +354,11 @@ int Client::GetFile(string& fileName, const string& dir)
 		if (!isConnected) {
 			return -3;
 		}
-		if (length >= BUFFER_SIZE)
-			out.write(buffer, BUFFER_SIZE);
+		if (length >= (BUFFER_SIZE-1))
+			out.write(buffer, (BUFFER_SIZE-1));
 		else
 			out.write(buffer, length);
-		length -= BUFFER_SIZE;
+		length -= (BUFFER_SIZE-1);
 
 	}
 	return 1;

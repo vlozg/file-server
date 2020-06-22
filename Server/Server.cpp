@@ -297,26 +297,6 @@ int Server::GetFile(const SOCKET& fsender, string& fileName, const string& dir)
 }
 
 /*
-Extract file name from file directory
-Parameter:
--    dir: file sirectory
-
-Return:
--    file name
-*/
-string GetFileNameForServer(const string& dir)
-{
-	int length = dir.length();
-	int pos = length - 1;
-	while (dir[pos] != '\\' && pos != 0)
-		pos--;
-	if (dir[pos] == '\\') pos++;
-	char res[255];
-	length = dir.copy(res, length - pos, pos);
-	res[length] = '\0';
-	return string(res);
-}
-/*
 Sending file process
 Precaution:
 -    Both SendFileForServer and GetFile must start at the same time
@@ -338,7 +318,7 @@ int Server::SendFileForServer(const SOCKET& freceiver, const string& dir)
 	long long int length;
 
 	//header 
-	string filename = "0" + GetFileNameForServer(dir);
+	string filename = "0" + GetFileName(dir);
 
 	//Send file name
 	sendResult = Send_s(freceiver,filename, 0);
@@ -370,7 +350,7 @@ int Server::SendFileForServer(const SOCKET& freceiver, const string& dir)
 		buffer[0] = '0';
 		sendResult = Send(freceiver, buffer, BUFFER_SIZE, 0);
 		if (sendResult == SOCKET_ERROR) return -1;
-		length -= BUFFER_SIZE;
+		length -= (BUFFER_SIZE-1);
 	}
 
 	file.close();

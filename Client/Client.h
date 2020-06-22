@@ -2,6 +2,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <limits>
 #include "CMenu.h"
 
 
@@ -21,7 +22,7 @@ public:
 	bool SignIn();
 	int SendFileToServer();
 	int GetFileFromServer();
-	void InputFileToGet(string& fileName, string& dir);
+	void NotiHandle();
 
 	bool IsConnected() {
 		return isConnected;

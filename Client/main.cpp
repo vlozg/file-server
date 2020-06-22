@@ -55,6 +55,7 @@ reconnect:
 		goto reconnect;
 	
 	//Main loop
+	thread NotiListen(&Client::NotiHandle, &client);
 	while (1) {
 		if (!LogIn) {
 			client.Create(port);

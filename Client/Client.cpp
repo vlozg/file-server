@@ -106,6 +106,40 @@ bool Client::SignUp() {
 }
 
 /*
+This function check every package and handle if it's a notification
+*/
+void Client::NotiHandle()
+{
+	char buffer[BUFFER_SIZE];
+	int bytesReceived = 0;
+	while (bytesReceived != SOCKET_ERROR) 
+	{
+		do
+		{
+			bytesReceived = recv(clientSocket.GetSock(), buffer, (sizeof(int32_t) + 1), MSG_PEEK);
+			if (bytesReceived == SOCKET_ERROR)
+			{
+				terminate();
+				return;
+			}
+		} while (bytesReceived != (sizeof(int32_t) + 1));
+
+		if (buffer[sizeof(int32_t)] == '1')
+		{
+			bytesReceived = Recv(clientSocket.GetSock(), buffer+1, BUFFER_SIZE, 0);
+			if (bytesReceived == SOCKET_ERROR)
+			{
+				terminate();
+				return;
+			}
+			UI.drawNotification(buffer);
+		}
+	}
+	terminate();
+	return;
+}
+
+/*
 The UI that prompt user to input the file name
 Return: processed file directory get from user
 */
@@ -115,7 +149,8 @@ string InputFileToSend()
 	cout << "Type in file you want to upload:\n"
 		<< "Tip: you can drag and drop the file you want into here.\n"
 		<< "> ";
-	cin >> ws;
+	cin.clear();
+	cin.ignore(INT_MAX);
 	getline(cin, fileDir);
 	if (*fileDir.begin() == '\"')
 		fileDir.erase(fileDir.begin());
@@ -166,31 +201,6 @@ int Client::SendFileToServer()
 	return 0;
 }
 
-
-/*
-The UI that prompt user to choose the file to download
-Parameter:
--	server: server's socket
--	fileName: returned fileName that user choose
--	dir: returned directory that user choose
-
-Return: file name user want to download
-*/
-void Client:: InputFileToGet(string& filename, string& dir)
-{
-	cout << "Choose file to download:\n";
-	cout << "> ";
-	cin >> ws;
-	getline(cin, filename);
-
-	cout << "Type in the directory you want your file to be saved in:\n"
-		<< "Precaution: this apply to all the file you choose.\n"
-		<< "Tip: leave the input empty to save to the execution file directory\n"
-		<< "> ";
-	cin >> ws;
-	getline(cin, dir);
-}
-
 /*
 Control downloading process from server to client (client side)
 (include calling UI function and process function)
@@ -234,7 +244,8 @@ int Client::GetFileFromServer()
 	remove(fileDB.c_str());	//Remove db file in client after reading data success
 
 	cout << "> ";
-	cin >> ws;
+	cin.clear();
+	cin.ignore(INT_MAX);
 	getline(cin, input);
 
 	//Get wanted diractory
@@ -242,7 +253,8 @@ int Client::GetFileFromServer()
 		<< "Precaution: this apply to all the file you choose.\n"
 		<< "Tip: leave the input empty to save to the execution file directory\n"
 		<< "> ";
-	cin >> ws;
+	cin.clear();
+	cin.ignore(INT_MAX);
 	getline(cin, dir);
 	if (*dir.begin() == '\"')
 		dir.erase(dir.begin());

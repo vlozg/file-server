@@ -119,23 +119,20 @@ void Client::NotiHandle()
 			bytesReceived = recv(clientSocket.GetSock(), buffer, (sizeof(int32_t) + 1), MSG_PEEK);
 			if (bytesReceived == SOCKET_ERROR)
 			{
-				terminate();
 				return;
 			}
 		} while (bytesReceived != (sizeof(int32_t) + 1));
 
 		if (buffer[sizeof(int32_t)] == '1')
 		{
-			bytesReceived = Recv(clientSocket.GetSock(), buffer+1, BUFFER_SIZE, 0);
+			bytesReceived = Recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, 0);
 			if (bytesReceived == SOCKET_ERROR)
 			{
-				terminate();
 				return;
 			}
-			UI.drawNotification(buffer);
+			UI.drawNotification(buffer+1);
 		}
 	}
-	terminate();
 	return;
 }
 
@@ -229,33 +226,45 @@ int Client::GetFileFromServer()
 	ifstream db(fileDB);
 
 	//Get wanted files
-	vector<string> choices;
 	cout << "Choose file to download:\n"
 		<< "Tip: you can enter multiple choices with each choice seperated\n"
 		<< "from the orthers by a space.\n";
 
 	string temp;
+	int count = 0;
 	while (getline(db, temp))
 	{
-		choices.push_back(temp);
-		cout << choices.size() << ". " << temp << "\n";
+		count++;
+		cout << count << ". " << temp << "\n";
 	}
 	db.close();
 	remove(fileDB.c_str());	//Remove db file in client after reading data success
 
+	//DB have no file
+	if (count == 0)
+	{
+		cout << "Server is empty, please upload any file first to be able to download.\n"
+			<< "Press any key to go back\n";
+		int sendResult = Send_s(clientSocket.GetSock(), "", 0);
+		if (sendResult == SOCKET_ERROR) {
+			isConnected = false;
+			return -3; //server down
+		}
+		_getch();
+		return 1;
+	}
 	cout << "> ";
-	cin.clear();
-	cin.ignore(INT_MAX);
 	getline(cin, input);
+	cin.ignore();
 
 	//Get wanted diractory
 	cout << "\nType in the directory you want your file to be saved in:\n"
 		<< "Precaution: this apply to all the file you choose.\n"
 		<< "Tip: leave the input empty to save to the execution file directory\n"
 		<< "> ";
-	cin.clear();
-	cin.ignore(INT_MAX);
 	getline(cin, dir);
+	cin.ignore();
+
 	if (*dir.begin() == '\"')
 		dir.erase(dir.begin());
 	if (*(dir.end() - 1) == '\"')
@@ -264,11 +273,11 @@ int Client::GetFileFromServer()
 	//List all the wanted files and send to server
 	stringstream userChoices(input);
 	int i = 0, index;
-	do
+	while (userChoices.good())
 	{
 		userChoices >> index;
 		buffer[i++] = index;
-	} while (userChoices.good());
+	} 
 	buffer[i] = '\0';
 
 	int sendResult = Send(clientSocket.GetSock(), buffer, i + 1, 0);

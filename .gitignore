@@ -8,3 +8,6 @@ Server/Debug/
 *.user
 *.mp4
 *.sln
+Server/FileDB.txt
+Server/Release/
+Server/Server.exe

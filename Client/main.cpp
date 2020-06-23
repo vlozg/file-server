@@ -55,7 +55,7 @@ reconnect:
 		goto reconnect;
 	
 	//Main loop
-	thread NotiListen(&Client::NotiHandle, &client);
+	thread NotiListen;
 	while (1) {
 		if (!LogIn) {
 			client.Create(port);
@@ -64,6 +64,7 @@ reconnect:
 		}
 		if (!client.IsConnected())
 			goto reconnect;
+		NotiListen = thread(&Client::NotiHandle, &client);
 		cout << "1. Upload a file to server !!! " << endl;
 		cout << "2. Download a file from server !!! " << endl;
 		cout << "3. Sign Out !!! " << endl;
@@ -81,6 +82,7 @@ reconnect:
 		case 3:
 			client.Disconnect();
 			LogIn = false;
+			NotiListen.join();
 			continue;
 			break;
 		case 4:

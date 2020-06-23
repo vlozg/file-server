@@ -66,10 +66,10 @@ void CMenu::drawBorder(int width, int height) {
 void CMenu::drawSignInMenu(string& username, string& password) {
 	
 	//Initialize
-	if (username.empty()) {
-		SetConsoleCursorPosition(window, { 0,0 });
-		drawBorder(50, 6);
-	}
+	//if (username.empty()) {
+	SetConsoleCursorPosition(window, { 0,0 });
+	drawBorder(50, 6);
+	//}
 
 	COORD cursor = { 2,1 };
 	SetConsoleCursorPosition(window, cursor);
@@ -308,9 +308,13 @@ string CMenu::getUsername(string username, string password) {
 
 void CMenu::drawNotification(string newNotification) {
 	cursorNotification.Y += 1;
+	COORD temp;
+	CONSOLE_SCREEN_BUFFER_INFO cbsi;
+	GetConsoleScreenBufferInfo(window, &cbsi);
+	temp = cbsi.dwCursorPosition;
 	SetConsoleCursorPosition(window, cursorNotification);
 	cout << newNotification;
-	SetConsoleCursorPosition(window, sysCursor);
+	SetConsoleCursorPosition(window, temp);
 }
 
 

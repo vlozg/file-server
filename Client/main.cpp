@@ -22,16 +22,13 @@ void main()
 	int clientChoice;
 	while (1) {
 		//get server address and port
+	changeIP:
 		cout << "Server IP Address : ";
 		cin >> ipAddress;
 		cout << "Server port: ";
 		cin >> port;
-
-		//ipAddress = "172.29.67.159";
-		//port = 54000;
-
-		int rec;
 	reconnect:
+		int rec;
 		client.Create(port);
 		if (!client.Connect(ipAddress)) {
 			std::cout << "Server is not currently available !!!\n Do you want to reconnect ? (1: yes, 2: Change IP): ";
@@ -40,7 +37,8 @@ void main()
 			std::cin >> rec;
 			switch (rec) {
 			case 2:
-				continue;
+				goto changeIP;
+				break;
 			case 1:
 				goto reconnect;
 				break;
@@ -53,7 +51,8 @@ void main()
 
 		if (!client.IsConnected())
 			goto reconnect;
-
+		else
+			break;
 	}
 	//Main loop
 	thread NotiListen;

@@ -333,7 +333,7 @@ int Server::SendFileForServer(const SOCKET& freceiver, const string& dir)
 
 	//Send file name
 	sendResult = Send_s(freceiver,filename, 0);
-
+	
 	if (sendResult == SOCKET_ERROR) return -1;
 
 	//Open file

@@ -27,7 +27,7 @@ void main()
 	cout << "Server port: ";
 	cin >> port;*/
 
-	ipAddress = "192.168.31.192";
+	ipAddress = "172.29.67.159";
 	port = 54000;
 
 	int rec;
@@ -56,15 +56,16 @@ reconnect:
 	
 	//Main loop
 	thread NotiListen;
+	NotiListen = thread(&Client::NotiHandle, &client);
 	while (1) {
 		if (!LogIn) {
 			client.Create(port);
 			client.Connect(ipAddress);
+			NotiListen = thread(&Client::NotiHandle, &client);
 			LogIn = true;
 		}
 		if (!client.IsConnected())
 			goto reconnect;
-		NotiListen = thread(&Client::NotiHandle, &client);
 		cout << "1. Upload a file to server !!! " << endl;
 		cout << "2. Download a file from server !!! " << endl;
 		cout << "3. Sign Out !!! " << endl;

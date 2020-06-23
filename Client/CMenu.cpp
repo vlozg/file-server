@@ -66,10 +66,10 @@ void CMenu::drawBorder(int width, int height) {
 void CMenu::drawSignInMenu(string& username, string& password) {
 	
 	//Initialize
-	if (username.empty()) {
+	//if (username.empty()) {
 	SetConsoleCursorPosition(window, { 0,0 });
 	drawBorder(50, 6);
-	}
+	//}
 
 	COORD cursor = { 2,1 };
 	SetConsoleCursorPosition(window, cursor);

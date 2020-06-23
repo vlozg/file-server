@@ -276,6 +276,20 @@ int Client::GetFileFromServer()
 	cin >> ws;
 	getline(cin, dir);
 
+	struct stat info;
+	//validate directory
+	while (1) {
+		const char* d = dir.c_str();
+		if (stat(d, &info) != 0) {
+			cout << "Can not regconize your dir!!! Insert Again: ";
+			cin >> ws;
+			getline(cin, dir);
+		}
+		else {
+			break;
+		}
+	}
+
 	if (*dir.begin() == '\"')
 		dir.erase(dir.begin());
 	if (*(dir.end() - 1) == '\"')

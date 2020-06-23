@@ -27,7 +27,7 @@ void main()
 	cout << "Server port: ";
 	cin >> port;*/
 
-	ipAddress = "172.29.67.159";
+	ipAddress = "192.168.31.192";
 	port = 54000;
 
 	int rec;

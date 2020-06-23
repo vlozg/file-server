@@ -3,6 +3,8 @@
 #include <fstream>
 #include <sstream>
 #include <limits>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "CMenu.h"
 
 

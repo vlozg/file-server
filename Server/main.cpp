@@ -52,8 +52,7 @@ void HandleConnection(SOCKET clientSocket) {
 
 		switch (HandleFlagSignal(notification)) {
 		case 1:
-			myServer.SignIn(client);
-			signIn = true;
+			if (myServer.SignIn(client)){ signIn = true; }
 			break;
 		case 2:
 			myServer.SignUp(client);

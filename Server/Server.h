@@ -36,7 +36,7 @@ public:
 		DataBaseScan();
 	}
 
-	void SignIn(Client&);
+	bool SignIn(Client&);
 	void SignUp(Client&);
 
 	int UserValidation(string,string);

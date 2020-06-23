@@ -3,7 +3,7 @@
 /*
 	Handle Sign In request
 */
-bool Server::SignIn(Client &client) {
+void Server::SignIn(Client& client) {
 	char buffer[BUFFER_SIZE];
 	string username, password;
 
@@ -25,20 +25,18 @@ bool Server::SignIn(Client &client) {
 		onlineConnection.push_back(client);
 		c.drawLog(username + " log in to server\n");
 		listOnlineUser();
-		
+
 	}
 	else {
 		Send(clientSocket.GetSock(), "00", 2, 0);
 	}
-	return signInResult;
-	
 }
 
 
-/* 
+/*
 	Check if user exist in database
 */
-int Server::UserValidation(string username,string password) {
+int Server::UserValidation(string username, string password) {
 	fstream fin;
 	int check = 0;
 	fin.open("accounts.txt", ios::in);
@@ -81,7 +79,7 @@ bool Server::AddUser(string username, string password) {
 /*
 	Handle Sign Up request
 */
-void Server::SignUp(Client &client) {
+void Server::SignUp(Client& client) {
 	char buffer[BUFFER_SIZE];
 	string newUsername, newPassword;
 
@@ -101,10 +99,10 @@ void Server::SignUp(Client &client) {
 		c.drawNotification(newUsername + " has just registed !!!\n");
 	}
 	else {
-		Send(clientSocket.GetSock(), "00",2, 0);
+		Send(clientSocket.GetSock(), "00", 2, 0);
 	}
-	
-	
+
+
 }
 
 
@@ -119,7 +117,7 @@ Return:
 - 0: client disconnected
 - -1: connection error
 */
-int Server::GetFileFromClient(Client &client)
+int Server::GetFileFromClient(Client& client)
 {
 	string fileName;
 
@@ -154,7 +152,7 @@ vector<string> Server::InputFileToSend(const SOCKET& client)
 {
 	char buffer[BUFFER_SIZE];
 	vector<string> choices, listFile;
-	
+
 	//check database before send to client
 	DataBaseScan();
 	//Send file database for client to choose
@@ -271,7 +269,7 @@ int Server::GetFile(const SOCKET& fsender, string& fileName, const string& dir)
 	while (1)
 	{
 		ZeroMemory(buffer, BUFFER_SIZE);
-	
+
 		//Waiting for data
 		bytesReceived = Recv(fsender, buffer, BUFFER_SIZE, 0);
 		if (bytesReceived == SOCKET_ERROR) return -1;
@@ -332,8 +330,7 @@ int Server::SendFileForServer(const SOCKET& freceiver, const string& dir)
 	string filename = "0" + GetFileName(dir);
 
 	//Send file name
-	sendResult = Send_s(freceiver,filename, 0);
-	
+	sendResult = Send_s(freceiver, filename, 0);
 	if (sendResult == SOCKET_ERROR) return -1;
 
 	//Open file
@@ -346,22 +343,22 @@ int Server::SendFileForServer(const SOCKET& freceiver, const string& dir)
 	file.seekg(0, file.beg);
 
 	//Send length
-	memcpy(buffer+1, &length, 8);
+	memcpy(buffer + 1, &length, 8);
 	//header 
 	buffer[0] = '0';
-	sendResult = Send(freceiver, buffer, 8+1, 0);
+	sendResult = Send(freceiver, buffer, 8 + 1, 0);
 	if (sendResult == SOCKET_ERROR) return -1;
 
 	//Send file
 	while (length > 0)
 	{
 		ZeroMemory(buffer, BUFFER_SIZE);
-		file.read(buffer+1, BUFFER_SIZE-1);
+		file.read(buffer + 1, BUFFER_SIZE - 1);
 		//header 
 		buffer[0] = '0';
 		sendResult = Send(freceiver, buffer, BUFFER_SIZE, 0);
 		if (sendResult == SOCKET_ERROR) return -1;
-		length -= (BUFFER_SIZE-1);
+		length -= (BUFFER_SIZE - 1);
 	}
 
 	file.close();

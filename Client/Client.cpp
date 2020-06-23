@@ -120,7 +120,7 @@ void Client::NotiHandle()
 			bytesReceived = recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, MSG_PEEK);
 			if (bytesReceived == SOCKET_ERROR)
 			{
-				UI.drawNotification("SERVER SHUTDOWN!!!");
+				ServerShutdown();
 				return;
 			}
 		} while (bytesReceived < (sizeof(int32_t) + 1));	//Only accept if peek enough bytes to check
@@ -144,13 +144,13 @@ void Client::NotiHandle()
 		bytesReceived = Recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, 0);
 		if (bytesReceived == SOCKET_ERROR)
 		{
-			UI.drawNotification("SERVER SHUTDOWN!!!");
+			ServerShutdown();
 			return;
 		}
 		UI.drawNotification(buffer+1);
 		notiHandle = false;
 	}
-	UI.drawNotification("SERVER SHUTDOWN!!!");
+	ServerShutdown();
 	return;
 }
 

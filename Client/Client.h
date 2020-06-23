@@ -143,6 +143,17 @@ public:
 		UI.Initialize();
 	}
 
+	void ServerShutdown() {
+		UI.drawNotification("SERVER SHUTDOWN !!! Quitting in");
+		Sleep(1000);
+		UI.drawNotification("3...");
+		Sleep(1000);
+		UI.drawNotification("2...");
+		Sleep(1000);
+		UI.drawNotification("1...");
+		exit(1);
+	}
+
 	Client() {};
 	~Client() {};
 };

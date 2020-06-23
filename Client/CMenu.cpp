@@ -363,11 +363,11 @@ void CMenu::resetActivity() {
 		SetConsoleCursorPosition(window, { 0,i });
 		cout << "                                                                               ";
 	}
-	SetConsoleCursorPosition(window, sysCursor);				//move cursor to bottom of windows
+	SetConsoleCursorPosition(window, { 0,1 });				//move cursor to bottom of windows
 }
 
 void CMenu::Initialize() {
-
+	SetConsoleCursorPosition(window, { 0,0 });
 	cout << "                                    Activity                                   \xBA";
 	cursorNotification = { 80,0 };
 	SetConsoleCursorPosition(window, cursorNotification);

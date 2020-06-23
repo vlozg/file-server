@@ -1,13 +1,16 @@
 
 Client/.vs/Client/v16/
 Client/Debug/
+Client/Release/
 Server/.vs/Server/v16/
 Server/Debug/
+Server/FileDB.txt
+Server/Release/
+Server/Server.exe
 *.filters
 *.vcxproj
 *.user
 *.mp4
 *.sln
-Server/FileDB.txt
-Server/Release/
-Server/Server.exe
+
+

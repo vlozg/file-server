@@ -2,6 +2,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <limits>
 #include "CMenu.h"
 
 
@@ -12,6 +13,9 @@ private:
 	string password;
 	Socket clientSocket;
 	bool isConnected;
+	bool isRecv = false;	//Flag
+	bool notiHandle = false;	//Flag
+	
 public:
 	vector <string> fileName;
 	CMenu UI;
@@ -21,7 +25,7 @@ public:
 	bool SignIn();
 	int SendFileToServer();
 	int GetFileFromServer();
-	void InputFileToGet(string& fileName, string& dir);
+	void NotiHandle();
 
 	bool IsConnected() {
 		return isConnected;
@@ -30,24 +34,74 @@ public:
 	int GetFile(string& fileName, const string& dir);
 	int SendFile(const SOCKET& freceiver, const string& dir);
 
-	bool CheckReceive(string &res,int &size,bool isString = TRUE,char *buf = NULL) {
-		char buffer[BUFFER_SIZE];
-		int byteReceived = Recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, 0);
-		if (byteReceived == SOCKET_ERROR) {
-			isConnected = false;
-			return true;
+	//Special Recv function that filter out every noti packet
+	int Recv_NonNoti(char* buffer, int32_t size, int flag) {
+		char tbuffer[BUFFER_SIZE];
+		int bytesReceived = 0;
+		isRecv = true;
+
+	Peek:
+		//Peek into packet
+		do
+		{
+			bytesReceived = recv(clientSocket.GetSock(), tbuffer, BUFFER_SIZE, MSG_PEEK);
+			if (bytesReceived == SOCKET_ERROR)
+			{
+				return bytesReceived;
+			}		
+		} while (bytesReceived < (sizeof(int32_t) + 1));	//Only accept if peek enough bytes to check
+			
+		//Check for noti flag
+		if (tbuffer[sizeof(int32_t)] == '1')
+		{
+			notiHandle = true;
+
+			//Loop until NotiHandle completed and set notiHandle flag to false
+			while (notiHandle);
+			
+			//Go back and peek again
+			goto Peek;
 		}
-		size = byteReceived - 1;
-		res = buffer + 1;
-		if (!isString) 
-			memcpy(buf,buffer+1,size);
-		if (buffer[0] == '0') {
-			return true; // not noti
-		}
-		else {
-			UI.drawNotification(res);
-			return false;
-		}
+
+		//Get packet
+		bytesReceived = Recv(clientSocket.GetSock(), tbuffer, BUFFER_SIZE, flag);
+		if (bytesReceived == SOCKET_ERROR) return bytesReceived;
+		
+		//Remove header
+		size = bytesReceived - 1;
+		memcpy(buffer,tbuffer+1,size);
+		isRecv = false;
+		return size;
+	}
+
+	//Special Recv function that filter out every noti packet
+	int Recv_NonNoti(string& buffer, int flag) {
+		int32_t size;
+		char tbuffer[BUFFER_SIZE];
+		int bytesReceived = 0;
+
+		//Only peek until received non-noti packet
+		do
+		{
+			//Peek into every packet
+			do
+			{
+				bytesReceived = recv(clientSocket.GetSock(), tbuffer, BUFFER_SIZE, MSG_PEEK);
+				if (bytesReceived == SOCKET_ERROR)
+				{
+					return bytesReceived;
+				}
+			} while (bytesReceived < (sizeof(int32_t) + 1));	//Only accept if peek enough bytes to check
+		} while (tbuffer[sizeof(int32_t)] == '1');	//Check for noti flag
+
+		//Get packet
+		bytesReceived = Recv(clientSocket.GetSock(), tbuffer, BUFFER_SIZE, flag);
+		if (bytesReceived == SOCKET_ERROR) return bytesReceived;
+
+		//Remove header
+		size = bytesReceived - 1;
+		buffer = (tbuffer + 1);
+		return size;
 	}
 
 	string GetUsername() {
@@ -90,4 +144,3 @@ public:
 	Client() {};
 	~Client() {};
 };
-

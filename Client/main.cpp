@@ -22,13 +22,13 @@ void main()
 	int clientChoice;
 
 	//get server address and port
-	/*cout << "Server IP Address : ";
+	cout << "Server IP Address : ";
 	cin >> ipAddress;
 	cout << "Server port: ";
-	cin >> port;*/
+	cin >> port;
 
-	ipAddress = "192.168.31.192";
-	port = 54000;
+	//ipAddress = "172.29.67.159";
+	//port = 54000;
 
 	int rec;
 reconnect:
@@ -55,10 +55,13 @@ reconnect:
 		goto reconnect;
 	
 	//Main loop
+	thread NotiListen;
+	NotiListen = thread(&Client::NotiHandle, &client);
 	while (1) {
 		if (!LogIn) {
 			client.Create(port);
 			client.Connect(ipAddress);
+			NotiListen = thread(&Client::NotiHandle, &client);
 			LogIn = true;
 		}
 		if (!client.IsConnected())
@@ -80,6 +83,7 @@ reconnect:
 		case 3:
 			client.Disconnect();
 			LogIn = false;
+			NotiListen.join();
 			continue;
 			break;
 		case 4:
@@ -89,7 +93,7 @@ reconnect:
 			break;
 		default:
 			cout << "Input is not valid !!! Try again in 1s !!!" << endl;
-			client.UIReset();
+			client.UI.resetActivity();
 			continue;
 		}
 		if (!client.IsConnected())
@@ -98,7 +102,7 @@ reconnect:
 		cin >> clientChoice;
 		switch (clientChoice) {
 		case 1:
-			client.UIReset();
+			client.UI.resetActivity();
 			continue;
 		case 2:
 			// Gracefully close down everything

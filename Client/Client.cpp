@@ -54,7 +54,7 @@ bool Client::SignIn() {
 			
 			string signInRes;
 			int size;
-			while (!CheckReceive(signInRes,size));
+			Recv_NonNoti(signInRes,0);
 
 			if (signInRes[0] == '1') {
 				return true;		// Breakout the loop
@@ -87,7 +87,7 @@ bool Client::SignUp() {
 			
 			string signUpRes;
 			int size;
-			while (!CheckReceive(signUpRes,size));
+			Recv_NonNoti(signUpRes,0);
 			
 			if (signUpRes[0] == '1') {
 				return true;
@@ -103,6 +103,50 @@ bool Client::SignUp() {
 		}
 	} while (1);
 
+}
+
+/*
+This function check every package and handle if it's a notification
+*/
+void Client::NotiHandle()
+{
+	char buffer[BUFFER_SIZE];
+	int bytesReceived = 0;
+	while (bytesReceived != SOCKET_ERROR) 
+	{
+		//Peek into every packet
+		do
+		{
+			bytesReceived = recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, MSG_PEEK);
+			if (bytesReceived == SOCKET_ERROR)
+			{
+				return;
+			}
+		} while (bytesReceived < (sizeof(int32_t) + 1));	//Only accept if peek enough bytes to check
+
+		if (buffer[sizeof(int32_t)] != '1')	//Check for noti flag
+		{
+			notiHandle = false;
+			continue;
+		}
+
+		//If Recv_NonNoti is running, check if it allow notiHandle
+		if (isRecv)
+		{
+			//Wait until noti handle allowed
+			while (!notiHandle);
+		}
+
+		//Get noti packet
+		bytesReceived = Recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, 0);
+		if (bytesReceived == SOCKET_ERROR)
+		{
+			return;
+		}
+		UI.drawNotification(buffer+1);
+		notiHandle = false;
+	}
+	return;
 }
 
 /*
@@ -166,31 +210,6 @@ int Client::SendFileToServer()
 	return 0;
 }
 
-
-/*
-The UI that prompt user to choose the file to download
-Parameter:
--	server: server's socket
--	fileName: returned fileName that user choose
--	dir: returned directory that user choose
-
-Return: file name user want to download
-*/
-void Client:: InputFileToGet(string& filename, string& dir)
-{
-	cout << "Choose file to download:\n";
-	cout << "> ";
-	cin >> ws;
-	getline(cin, filename);
-
-	cout << "Type in the directory you want your file to be saved in:\n"
-		<< "Precaution: this apply to all the file you choose.\n"
-		<< "Tip: leave the input empty to save to the execution file directory\n"
-		<< "> ";
-	cin >> ws;
-	getline(cin, dir);
-}
-
 /*
 Control downloading process from server to client (client side)
 (include calling UI function and process function)
@@ -219,20 +238,33 @@ int Client::GetFileFromServer()
 	ifstream db(fileDB);
 
 	//Get wanted files
-	vector<string> choices;
 	cout << "Choose file to download:\n"
 		<< "Tip: you can enter multiple choices with each choice seperated\n"
 		<< "from the orthers by a space.\n";
 
 	string temp;
+	int count = 0;
 	while (getline(db, temp))
 	{
-		choices.push_back(temp);
-		cout << choices.size() << ". " << temp << "\n";
+		count++;
+		cout << count << ". " << temp << "\n";
 	}
 	db.close();
 	remove(fileDB.c_str());	//Remove db file in client after reading data success
 
+	//DB have no file
+	if (count == 0)
+	{
+		cout << "Server is empty, please upload any file first to be able to download.\n"
+			<< "Press any key to go back\n";
+		int sendResult = Send_s(clientSocket.GetSock(), "", 0);
+		if (sendResult == SOCKET_ERROR) {
+			isConnected = false;
+			return -3; //server down
+		}
+		_getch();
+		return 1;
+	}
 	cout << "> ";
 	cin >> ws;
 	getline(cin, input);
@@ -240,10 +272,10 @@ int Client::GetFileFromServer()
 	//Get wanted diractory
 	cout << "\nType in the directory you want your file to be saved in:\n"
 		<< "Precaution: this apply to all the file you choose.\n"
-		<< "Tip: leave the input empty to save to the execution file directory\n"
 		<< "> ";
 	cin >> ws;
 	getline(cin, dir);
+
 	if (*dir.begin() == '\"')
 		dir.erase(dir.begin());
 	if (*(dir.end() - 1) == '\"')
@@ -252,11 +284,11 @@ int Client::GetFileFromServer()
 	//List all the wanted files and send to server
 	stringstream userChoices(input);
 	int i = 0, index;
-	do
+	while (userChoices.good())
 	{
 		userChoices >> index;
 		buffer[i++] = index;
-	} while (userChoices.good());
+	} 
 	buffer[i] = '\0';
 
 	int sendResult = Send(clientSocket.GetSock(), buffer, i + 1, 0);
@@ -307,7 +339,7 @@ int Client::GetFile(string& fileName, const string& dir)
 {
 
 	char buffer[BUFFER_SIZE];
-	int bytesReceived;
+	int bytesReceived = 0;
 
 	//Get file name from sender
 
@@ -316,7 +348,7 @@ int Client::GetFile(string& fileName, const string& dir)
 	//Wait for server to send
 	//Loop until file name received
 		
-	while (!CheckReceive(fileName, bytesReceived));
+	Recv_NonNoti(fileName, 0);
 	if (!isConnected) {
 		return -3;
 	}
@@ -328,7 +360,7 @@ int Client::GetFile(string& fileName, const string& dir)
 	ZeroMemory(buffer, BUFFER_SIZE);
 
 	//Waiting for data
-	while (!CheckReceive(data, bytesReceived, FALSE, buffer));
+	Recv_NonNoti(buffer, bytesReceived, 0);
 	if (!isConnected) {
 		return -3;
 	}
@@ -350,7 +382,7 @@ int Client::GetFile(string& fileName, const string& dir)
 	while(length>0) {
 		ZeroMemory(buffer, BUFFER_SIZE);
 		//Waiting for data
-		while (!CheckReceive(data, bytesReceived, FALSE, buffer));
+		Recv_NonNoti(buffer, bytesReceived, 0);
 		if (!isConnected) {
 			return -3;
 		}
@@ -445,3 +477,4 @@ int Client::SendFile(const SOCKET& freceiver, const string& dir)
 	file.close();
 	return 1;
 }
+

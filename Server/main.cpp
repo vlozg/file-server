@@ -29,7 +29,7 @@ int HandleFlagSignal(string flag) {
 void HandleConnection(SOCKET clientSocket) {
 	char buffer[BUFFER_SIZE];
 	Socket serverSocket = myServer.GetSocket();
-	
+
 	Client client;
 	client.SetSOCKET(clientSocket);
 
@@ -40,7 +40,7 @@ void HandleConnection(SOCKET clientSocket) {
 		ZeroMemory(buffer, BUFFER_SIZE);
 
 		// wait for client to send data
-		int bytesReceived = Recv(clientSocket, buffer,BUFFER_SIZE,0);
+		int bytesReceived = Recv(clientSocket, buffer, BUFFER_SIZE, 0);
 		if (bytesReceived == SOCKET_ERROR) {
 			if (signIn)
 				myServer.ClientDisconnectLog(client);
@@ -104,8 +104,8 @@ void ServerListenning(Server server) {
 
 			//push a new thread into the array to handle new connection
 			//after that comeback and listen to new connection
-			clientHandleThread.push_back(thread(HandleConnection,newClient));
-			
+			clientHandleThread.push_back(thread(HandleConnection, newClient));
+
 		}
 	}
 }
@@ -133,8 +133,8 @@ int main()
 	cout << "Host Name: " << serverInfo.getHostName() << endl;
 	cout << "Host IP Address: " << serverInfo.getHostIPAddress() << endl;*/
 
-	/* 
-		server side 
+	/*
+		server side
 	*/
 
 	//create socket server

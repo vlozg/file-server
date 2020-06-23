@@ -67,8 +67,8 @@ void CMenu::drawSignInMenu(string& username, string& password) {
 	
 	//Initialize
 	if (username.empty()) {
-		SetConsoleCursorPosition(window, { 0,0 });
-		drawBorder(50, 6);
+	SetConsoleCursorPosition(window, { 0,0 });
+	drawBorder(50, 6);
 	}
 
 	COORD cursor = { 2,1 };
@@ -78,6 +78,8 @@ void CMenu::drawSignInMenu(string& username, string& password) {
 	SetConsoleCursorPosition(window, cursor);
 	cout << "PASSWORD:                                    ";
 	cursor = { 2,5 };
+	SetConsoleCursorPosition(window, { 2,8 });
+	cout << "Press ESC to return!!";
 
 	username.clear();
 	password.clear();
@@ -86,11 +88,17 @@ void CMenu::drawSignInMenu(string& username, string& password) {
 	cursor = { 12,1 };
 	SetConsoleCursorPosition(window, cursor);
 	username = getUsername(username,password);
+	if (username.empty()) {
+		return;
+	}
 
 	//input password
 	cursor = { 12,3 };
 	SetConsoleCursorPosition(window, cursor);
 	password = getPassword(username,password);
+	if (password.empty()) {
+		return;
+	}
 
 }
 
@@ -113,13 +121,17 @@ void CMenu::drawSignUpMenu(string& username, string& password) {
 	username.clear();
 	password.clear();
 	string rePassword;
-		
+	SetConsoleCursorPosition(window, {2,10});
+	cout << "Press ESC to return!!";
 	//input username
 	while (1) {
 		//input username
 		cursor = { 12,1 };
 		SetConsoleCursorPosition(window, cursor);
 		username = getUsername(username,password);
+		if (username.empty()) {
+			return;
+		}
 
 		//remove notification
 		cursor = { 2,7 };
@@ -134,6 +146,7 @@ void CMenu::drawSignUpMenu(string& username, string& password) {
 			cursor = { 2,7 };
 			SetConsoleCursorPosition(window, cursor);
 			cout << "Username can't contain special characters, have number and character!";
+			username.clear();
 
 			//remove old username
 			cursor = { 12, 1 };
@@ -148,7 +161,9 @@ void CMenu::drawSignUpMenu(string& username, string& password) {
 		cursor = { 12,3 };
 		SetConsoleCursorPosition(window, cursor);
 		password = getPassword(username,password);
-
+		if (password.empty()) {
+			return;
+		}
 		//remove notification
 		cursor = { 2,7 };
 		SetConsoleCursorPosition(window, cursor);
@@ -162,6 +177,7 @@ void CMenu::drawSignUpMenu(string& username, string& password) {
 			cursor = { 2,7 };
 			SetConsoleCursorPosition(window, cursor);
 			cout << "Password can't contain special characters, have number and character!";
+			password.clear();
 
 			//remove old username
 			cursor = { 12,3 };
@@ -174,9 +190,14 @@ void CMenu::drawSignUpMenu(string& username, string& password) {
 	cursor = { 20,5 };
 	SetConsoleCursorPosition(window, cursor);
 	rePassword = getPassword(username, rePassword);
+	if (rePassword.empty()) {
+		return;
+	}
 
 	//check password and confirm pass word
 	while (password.compare(rePassword) != 0) {
+		password.clear();
+		rePassword.clear();
 		cursor = { 2,7 };
 		SetConsoleCursorPosition(window, cursor);
 		cout << "Those password didn't match! Try again!";
@@ -196,6 +217,9 @@ void CMenu::drawSignUpMenu(string& username, string& password) {
 		cursor = { 12,3 };
 		SetConsoleCursorPosition(window, cursor);
 		password = getPassword(username,password);
+		if (password.empty()) {
+			return;
+		}
 			
 		//remove notification
 		cursor = { 2,7 };
@@ -206,6 +230,10 @@ void CMenu::drawSignUpMenu(string& username, string& password) {
 		cursor = { 20,5 };
 		SetConsoleCursorPosition(window, cursor);
 		rePassword = getPassword(username, rePassword);
+		if (rePassword.empty()) {
+			password.clear();
+			return;
+		}
 	}
 }
 
@@ -223,25 +251,34 @@ void CMenu::drawSignNotification(int type) {
 
 
 int CMenu::drawFirstMenu(string &username,string &password) {
-	system("CLS");
-	drawBorder(80, 6);
-	int sel;
-	COORD cursor = { 2,1 };
-	SetConsoleCursorPosition(window, cursor);
-	cout << "Input 1: Sign In           --------            Input 2: Sign Up \n\n";
 	while (1) {
+		username.clear();
+		password.clear();
+		system("CLS");
+		drawBorder(80, 6);
+		string sel;
+		COORD cursor = { 2,1 };
+		SetConsoleCursorPosition(window, cursor);
+		cout << "Input 1: Sign In           --------            Input 2: Sign Up \n\n";
 		cursor = { 2,3 };
 		SetConsoleCursorPosition(window, cursor);
 		cout << "Your selection: ";
 		cin >> sel;
-		if (sel == 1) {
+		if (sel == "1") {
 			system("CLS");
 			drawSignInMenu(username, password);
+			if (username.empty() || password.empty()) {
+				continue;
+			}
+
 			return 1;
 		}
-		else if (sel == 2) {
+		else if (sel == "2") {
 			system("CLS");
 			drawSignUpMenu(username, password);
+			if (username.empty() || password.empty()) {
+				continue;
+			}
 			return 2;
 		}
 		else {
@@ -269,7 +306,8 @@ string CMenu::getPassword(string username, string password) {
 			break;
 		}
 		else if (c == 27) {					//27 = ESC return to first menu
-			drawFirstMenu(username,password);
+			//drawFirstMenu(username,password);
+			return "";
 		}
 		else {
 			password.push_back(c);
@@ -294,7 +332,8 @@ string CMenu::getUsername(string username, string password) {
 			break;
 		}
 		else if (c == 27) {
-			drawFirstMenu(username,password);
+		//	drawFirstMenu(username,password);
+			return "";
 		}
 		else {
 			username.push_back(c);
@@ -308,9 +347,13 @@ string CMenu::getUsername(string username, string password) {
 
 void CMenu::drawNotification(string newNotification) {
 	cursorNotification.Y += 1;
+	COORD temp;
+	CONSOLE_SCREEN_BUFFER_INFO cbsi;
+	GetConsoleScreenBufferInfo(window, &cbsi);
+	temp = cbsi.dwCursorPosition;
 	SetConsoleCursorPosition(window, cursorNotification);
 	cout << newNotification;
-	SetConsoleCursorPosition(window, sysCursor);
+	SetConsoleCursorPosition(window, temp);
 }
 
 

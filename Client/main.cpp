@@ -20,40 +20,41 @@ void main()
 	Client client;
 	bool LogIn = true;
 	int clientChoice;
+	while (1) {
+		//get server address and port
+		cout << "Server IP Address : ";
+		cin >> ipAddress;
+		cout << "Server port: ";
+		cin >> port;
 
-	//get server address and port
-	cout << "Server IP Address : ";
-	cin >> ipAddress;
-	cout << "Server port: ";
-	cin >> port;
+		//ipAddress = "172.29.67.159";
+		//port = 54000;
 
-	//ipAddress = "172.29.67.159";
-	//port = 54000;
+		int rec;
+	reconnect:
+		client.Create(port);
+		if (!client.Connect(ipAddress)) {
+			std::cout << "Server is not currently available !!!\n Do you want to reconnect ? (1: yes, 2: Change IP): ";
 
-	int rec;
-reconnect:
-	client.Create(port);
-	if (!client.Connect(ipAddress)) {
-		std::cout << "Server is not currently available !!!\n Do you want to reconnect ? (1: yes, 2: no): ";
-		
-	retype:
-		std::cin >> rec;
-		switch (rec) {
-		case 2:
-			return;
-		case 1:
-			goto reconnect;
-			break;
-		default:
-			std::cout << "Wrong input!!! Type again" << endl;
-			goto retype;
-			break;
+		retype:
+			std::cin >> rec;
+			switch (rec) {
+			case 2:
+				continue;
+			case 1:
+				goto reconnect;
+				break;
+			default:
+				std::cout << "Wrong input!!! Type again" << endl;
+				goto retype;
+				break;
+			}
 		}
-	}
 
-	if (!client.IsConnected())
-		goto reconnect;
-	
+		if (!client.IsConnected())
+			goto reconnect;
+
+	}
 	//Main loop
 	thread NotiListen;
 	NotiListen = thread(&Client::NotiHandle, &client);

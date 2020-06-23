@@ -107,7 +107,7 @@ reconnect:
 		case 2:
 			// Gracefully close down everything
 			client.Disconnect();
-			return;
+			exit(1);
 		}
 	}
 	

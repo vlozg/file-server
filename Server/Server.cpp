@@ -3,7 +3,7 @@
 /*
 	Handle Sign In request
 */
-void Server::SignIn(Client& client) {
+bool Server::SignIn(Client& client) {
 	char buffer[BUFFER_SIZE];
 	string username, password;
 
@@ -30,6 +30,7 @@ void Server::SignIn(Client& client) {
 	else {
 		Send(clientSocket.GetSock(), "00", 2, 0);
 	}
+	return signInResult;
 }
 
 

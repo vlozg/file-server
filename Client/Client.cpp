@@ -135,6 +135,8 @@ void Client::NotiHandle()
 		{
 			//Wait until noti handle allowed
 			while (!notiHandle);
+			if (!isRecv)
+				continue;
 		}
 
 		//Get noti packet
@@ -449,7 +451,7 @@ int Client::SendFile(const SOCKET& freceiver, const string& dir)
 {
 	char buffer[BUFFER_SIZE];
 	string userInput;
-	int sendResult, bytesReceived;
+	int sendResult;
 	long long int length;
 
 	//Send file name

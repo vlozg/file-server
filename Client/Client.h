@@ -145,12 +145,12 @@ public:
 
 	void ServerShutdown() {
 		UI.drawNotification("SERVER SHUTDOWN !!! Quitting in");
-		Sleep(1000);
 		UI.drawNotification("3...");
 		Sleep(1000);
 		UI.drawNotification("2...");
 		Sleep(1000);
 		UI.drawNotification("1...");
+		Sleep(1000);
 		exit(1);
 	}
 

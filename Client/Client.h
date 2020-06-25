@@ -17,7 +17,7 @@ private:
 	bool isConnected;
 	bool isRecv = false;	//Flag
 	bool notiHandle = false;	//Flag
-	
+	bool isUpload = true; //flag
 public:
 	vector <string> fileName;
 	CMenu UI;

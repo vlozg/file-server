@@ -147,7 +147,19 @@ void Client::NotiHandle()
 			ServerShutdown();
 			return;
 		}
-		UI.drawNotification(buffer+1);
+		string data = buffer + 1;
+		string isUploadNoti = "Other client is uploading!!! Please wait a second...";
+		if (data[0] == 'F') {
+			if (isUpload != false)
+			isUpload = false;
+		}
+		else if (data[0] == 'T') {
+			isUpload = true;
+		}
+		else {
+			UI.drawNotification(data);
+			isUpload = true;
+		}
 		notiHandle = false;
 	}
 	ServerShutdown();
@@ -189,11 +201,20 @@ int Client::SendFileToServer()
 {
 	string fileDir;
 	// send signal flag to server
-	string notification = "Upload";
-	if (Send_s(clientSocket.GetSock(), notification, 0) == -1) {
-		isConnected = false; 
-		return -3; //server down
-	}
+	bool signal = false;
+	do {
+		if (!isUpload && !signal) {
+			UI.drawNotification("Another client is uploading !!!");
+			UI.drawNotification("Please wait a send !!!");
+			signal = true;
+		}
+		string notification = "Upload";
+		if (Send_s(clientSocket.GetSock(), notification, 0) == -1) {
+			isConnected = false;
+			return -3; //server down
+		}
+		Sleep(500);	// wait and check if server free
+	} while (isUpload == false);
 	fileDir = InputFileToSend();
 
 	//Get file dir & art file transfering

@@ -1,5 +1,6 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include "Server.h"
+#include "main.h"
 
 vector <thread> clientHandleThread;
 
@@ -58,7 +59,11 @@ void HandleConnection(SOCKET clientSocket) {
 			myServer.SignUp(client);
 			break;
 		case 3:
-			myServer.GetFileFromClient(client);
+			if (!myServer.isUpload()) {
+				myServer.SendNoti("F", client.GetUsername());
+				myServer.GetFileFromClient(client);
+				myServer.SetUploadClient(client.GetUsername());
+			}
 			break;
 		case 4:
 			myServer.SendFileToClient(client);

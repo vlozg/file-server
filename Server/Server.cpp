@@ -25,7 +25,9 @@ bool Server::SignIn(Client& client) {
 		onlineConnection.push_back(client);
 		c.drawLog(username + " log in to server\n");
 		listOnlineUser();
-
+		if (isUploading) {
+			SendNoti("F",uploadClient);
+		}
 	}
 	else {
 		Send(clientSocket.GetSock(), "00", 2, 0);
@@ -126,6 +128,8 @@ int Server::GetFileFromClient(Client& client)
 
 	//Start receiving file from client
 	int err = GetFile(clientSocket, fileName, "");
+	SendNoti("T");
+	uploadClient = "";
 	switch (err)
 	{
 	case 1:
@@ -245,7 +249,7 @@ int Server::GetFile(const SOCKET& fsender, string& fileName, const string& dir)
 
 	char buffer[BUFFER_SIZE];
 	int bytesReceived;
-
+	isUploading = true;
 	//Get file name from sender
 	while (1)
 	{

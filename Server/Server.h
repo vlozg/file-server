@@ -15,12 +15,19 @@ private:
 	vector <string> fileName;
 	Socket serverSocket;
 	vector <Client> onlineConnection;
+	bool isUploading = false;
+	string uploadClient;
 public:
 	CMainWindow c;
 	Socket GetSocket() {
 		return serverSocket;
 	}
-
+	bool isUpload() {
+		return isUploading;
+	}
+	void SetUploadClient(string name) {
+		uploadClient = name;
+	}
 	/*
 		function create socket and tell winsock the socket is listenning
 
@@ -60,9 +67,11 @@ public:
 	vector<string> InputFileToSend(const SOCKET& client);
 	int SendFileToClient(Client& client);
 
-	void SendNoti(string noti) {
+	void SendNoti(string noti, string name = "") {
 		noti = "1" + noti;
 		for (int i = 0; i < onlineConnection.size(); i++) {
+			if (name == onlineConnection[i].GetUsername())
+				continue;
 			Send_s(onlineConnection[i].GetSocket().GetSock(), noti, 0);
 		}
 	}

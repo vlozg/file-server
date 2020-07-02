@@ -51,8 +51,20 @@ public:
 	*/
 	void UpdateDB(const string& fileName)
 	{
+		string file;
+		ifstream db(FILE_DB);
+		while (getline(db, file)) {
+			ifstream f(file);
+			//write the name to temp if file exists
+			if (file == fileName) {
+				return;
+			}
+		}
+		db.close();
 		ofstream out(FILE_DB, ios::app);
+		
 		out << fileName << "\n";
+		out.close();
 	}
 
 	int GetFileFromClient(Client&);

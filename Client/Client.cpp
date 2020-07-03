@@ -136,7 +136,7 @@ void Client::NotiHandle()
 		if (buffer[sizeof(int32_t)] != '1')	//Check for noti flag
 		{
 			notiHandle = false;
-			cout << "N";
+			//cout << "N";
 			lck.unlock();
 			covaRecv.notify_one();	//Notify when detect data packet
 			continue;

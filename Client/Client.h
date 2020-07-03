@@ -53,7 +53,7 @@ public:
 			bytesReceived = Recv(clientSocket.GetSock(), tbuffer, BUFFER_SIZE, flag);
 			notiHandle = true;
 		}
-		cout << "R";
+		//cout << "R";
 		covaNoti.notify_one();
 		if (bytesReceived == SOCKET_ERROR) return bytesReceived;
 
@@ -77,7 +77,7 @@ public:
 			bytesReceived = Recv(clientSocket.GetSock(), tbuffer, BUFFER_SIZE, flag);
 			notiHandle = true;
 		}
-		cout << "R";
+		//cout << "R";
 		covaNoti.notify_one();
 		if (bytesReceived == SOCKET_ERROR) return bytesReceived;
 

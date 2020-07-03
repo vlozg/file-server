@@ -368,6 +368,7 @@ int Server::SendFileForServer(const SOCKET& freceiver, const string& dir)
 		}
 		
 		if (sendResult == SOCKET_ERROR) return -1;
+		//cout << length << "  ";
 	}
 
 	file.close();

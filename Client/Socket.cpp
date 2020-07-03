@@ -4,15 +4,19 @@
 int Send(SOCKET receiver, const char* buffer, int32_t size, int flag)
 {
 	int sendResult;
+	char* tbuffer = new char[size + sizeof(size)];
 	//Include packet size in the head of packet
-	sendResult = send(receiver, (char*)&size, sizeof(size), flag);
+	memcpy(tbuffer, (char*)&size, sizeof(size));
+	memcpy(tbuffer + sizeof(size), buffer, size);
+	//sendResult = send(receiver, (char*)&size, sizeof(size), flag);
+	//if (sendResult == SOCKET_ERROR)
+	//	return sendResult;
+
+	sendResult = send(receiver, tbuffer, size + sizeof(size), flag);
 	if (sendResult == SOCKET_ERROR)
 		return sendResult;
 
-	sendResult = send(receiver, buffer, size, flag);
-	if (sendResult == SOCKET_ERROR)
-		return sendResult;
-
+	delete[] tbuffer;
 	return size;
 }
 
@@ -24,14 +28,20 @@ int Send_s(SOCKET receiver, const string& buffer, int flag)
 {
 	int32_t size = buffer.length() + 1;
 	int sendResult;
+	char* tbuffer = new char[size + sizeof(size)];
+
 	//Include packet size in the head of packet
-	sendResult = send(receiver, (char*)&size, sizeof(size), flag);
+	memcpy(tbuffer, (char*)&size, sizeof(size));
+	memcpy(tbuffer + sizeof(size), buffer.c_str(), size);
+	//sendResult = send(receiver, (char*)&size, sizeof(size), flag);
+	//if (sendResult == SOCKET_ERROR)
+	//	return sendResult;
+
+	sendResult = send(receiver, tbuffer, size + sizeof(size), flag);
 	if (sendResult == SOCKET_ERROR)
 		return sendResult;
 
-	sendResult = send(receiver, buffer.c_str(), size, flag);
-	if (sendResult == SOCKET_ERROR)
-		return sendResult;
+	delete[] tbuffer;
 	return size;
 }
 

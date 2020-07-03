@@ -141,7 +141,6 @@ void Client::NotiHandle()
 			covaRecv.notify_one();	//Notify when detect data packet
 			continue;
 		}
-		cout << "!!Noti!!";
 		
 		bytesReceived = Recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, 0);
 		
@@ -156,7 +155,6 @@ void Client::NotiHandle()
 	notiHandle = false;
 	//ServerShutdown();
 	isNotiListenOn = false;
-	cout << "!!no error!!";
 	return;
 ErrorOccur:
 	notiHandle = false;

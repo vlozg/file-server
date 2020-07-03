@@ -9,17 +9,9 @@ int Send(SOCKET receiver, const char* buffer, int32_t size, int flag)
 	if (sendResult == SOCKET_ERROR)
 		return sendResult;
 
-	//Send buffer based on size
-	int bytesSent = 0;
-	do
-	{
-		//Must add the number of sent bytes
-		sendResult = send(receiver, buffer + bytesSent, size - bytesSent, flag);
-		if (sendResult == SOCKET_ERROR)
-			return sendResult;
-
-		bytesSent += sendResult;	//Add up the number of sent bytes
-	} while (bytesSent < size);
+	sendResult = send(receiver, buffer, size, flag);
+	if (sendResult == SOCKET_ERROR)
+		return sendResult;
 
 	return size;
 }
@@ -37,17 +29,9 @@ int Send_s(SOCKET receiver, const string& buffer, int flag)
 	if (sendResult == SOCKET_ERROR)
 		return sendResult;
 
-	//Send buffer based on size
-	int bytesSent = 0;
-	do
-	{
-		//Must add the number of sent bytes
-		sendResult = send(receiver, buffer.c_str() + bytesSent, size - bytesSent, flag);
-		if (sendResult == SOCKET_ERROR)
-			return sendResult;
-
-		bytesSent += sendResult;	//Add up the number of sent bytes
-	} while (bytesSent < size);
+	sendResult = send(receiver, buffer.c_str(), size, flag);
+	if (sendResult == SOCKET_ERROR)
+		return sendResult;
 	return size;
 }
 
@@ -62,10 +46,16 @@ int Recv(SOCKET sender, char* buffer, int32_t size, int flag)
 
 	//Receive packet size first
 	int receiveResult;
-	receiveResult = recv(sender, (char*)&size, sizeof(size), flag);
-	if (receiveResult == SOCKET_ERROR)
-		return receiveResult;
-
+	do
+	{
+		//Must add the number of received bytes
+		receiveResult = recv(sender, (char*)&size + bytesReceived, sizeof(size) - bytesReceived, flag);
+		if (receiveResult == SOCKET_ERROR)
+			return receiveResult;
+		bytesReceived += receiveResult;	//Add up the number of received bytes
+	} while (bytesReceived < sizeof(size));	//In case bytes reveived < bytes expected
+	
+	bytesReceived = 0;
 	//Receive buffer based on size received
 	do
 	{
@@ -73,7 +63,6 @@ int Recv(SOCKET sender, char* buffer, int32_t size, int flag)
 		receiveResult = recv(sender, buffer + bytesReceived, size - bytesReceived, flag);
 		if (receiveResult == SOCKET_ERROR)
 			return receiveResult;
-
 		bytesReceived += receiveResult;	//Add up the number of received bytes
 	} while (bytesReceived < size);	//In case bytes reveived < bytes expected
 

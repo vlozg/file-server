@@ -15,6 +15,7 @@ private:
 	vector <string> fileName;
 	Socket serverSocket;
 	vector <Client> onlineConnection;
+
 public:
 	CMainWindow c;
 	Socket GetSocket() {
@@ -62,6 +63,7 @@ public:
 
 	void SendNoti(string noti) {
 		noti = "1" + noti;
+
 		for (int i = 0; i < onlineConnection.size(); i++) {
 			Send_s(onlineConnection[i].GetSocket().GetSock(), noti, 0);
 		}

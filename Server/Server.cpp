@@ -353,7 +353,6 @@ int Server::SendFileForServer(const SOCKET& freceiver, const string& dir)
 	buffer[0] = '0';
 	sendResult = Send(freceiver, buffer, 8 + 1, 0);
 	if (sendResult == SOCKET_ERROR) return -1;
-
 	//Send file
 	while (length > 0)
 	{
@@ -361,9 +360,19 @@ int Server::SendFileForServer(const SOCKET& freceiver, const string& dir)
 		file.read(buffer + 1, BUFFER_SIZE - 1);
 		//header 
 		buffer[0] = '0';
-		sendResult = Send(freceiver, buffer, BUFFER_SIZE, 0);
+		if (length >= BUFFER_SIZE - 1)
+		{
+			sendResult = Send(freceiver, buffer, BUFFER_SIZE, 0);
+			length -= (BUFFER_SIZE - 1);
+		}
+		else
+		{
+			sendResult = Send(freceiver, buffer, length + 1, 0);
+			length = 0;
+		}
+		
 		if (sendResult == SOCKET_ERROR) return -1;
-		length -= (BUFFER_SIZE - 1);
+		//cout << length << "  ";
 	}
 
 	file.close();

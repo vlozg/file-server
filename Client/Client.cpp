@@ -112,41 +112,44 @@ void Client::NotiHandle()
 {
 	char buffer[BUFFER_SIZE];
 	int bytesReceived = 0;
+	isNotiListenOn = true;
 	while (bytesReceived != SOCKET_ERROR) 
 	{
+		//cout << "Noti wait\n";
+		unique_lock<mutex> lck(mutex_);
+		covaNoti.wait(lck, [this] { return (notiHandle); });
+		//cout << "Noti awake\n";
+
 		//Peek into every packet
 		do
 		{
 			bytesReceived = recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, MSG_PEEK);
+		
 			if (bytesReceived == SOCKET_ERROR)
 			{
-				ServerShutdown();
-				return;
+				//cout << "error here! with error code " << WSAGetLastError() << endl;
+				//ServerShutdown();
+				goto ErrorOccur;
 			}
 		} while (bytesReceived < (sizeof(int32_t) + 1));	//Only accept if peek enough bytes to check
 
 		if (buffer[sizeof(int32_t)] != '1')	//Check for noti flag
 		{
 			notiHandle = false;
+			//cout << "N";
+			lck.unlock();
+			covaRecv.notify_one();	//Notify when detect data packet
 			continue;
 		}
-
-		//If Recv_NonNoti is running, check if it allow notiHandle
-		if (isRecv)
-		{
-			//Wait until noti handle allowed
-			while (!notiHandle);
-			if (!isRecv)
-				continue;
-		}
-
-		//Get noti packet
+		
 		bytesReceived = Recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, 0);
+		
 		if (bytesReceived == SOCKET_ERROR)
 		{
-			ServerShutdown();
-			return;
+			//ServerShutdown();
+			goto ErrorOccur;
 		}
+
 		string data = buffer + 1;
 		string isUploadNoti = "Other client is uploading!!! Please wait a second...";
 		if (data[0] == 'F') {
@@ -160,9 +163,18 @@ void Client::NotiHandle()
 			UI.drawNotification(data);
 			isUpload = true;
 		}
-		notiHandle = false;
+		
+		lck.unlock();
+		UI.drawNotification(buffer+1);
 	}
-	ServerShutdown();
+	notiHandle = false;
+	//ServerShutdown();
+	isNotiListenOn = false;
+	return;
+ErrorOccur:
+	notiHandle = false;
+	isNotiListenOn = false;
+	cout << "!!error!!";
 	return;
 }
 
@@ -506,12 +518,20 @@ int Client::SendFile(const SOCKET& freceiver, const string& dir)
 	{
 		ZeroMemory(buffer, BUFFER_SIZE);
 		file.read(buffer, BUFFER_SIZE);
-		sendResult = Send(freceiver, buffer, BUFFER_SIZE, 0);
+		if (length >= BUFFER_SIZE)
+		{
+			sendResult = Send(freceiver, buffer, BUFFER_SIZE, 0);
+			length -= BUFFER_SIZE;
+		}
+		else
+		{
+			sendResult = Send(freceiver, buffer, length, 0);
+			length = 0;
+		}
 		if (sendResult == SOCKET_ERROR) {
 			isConnected = false;
 			return -3;
 		}
-		length -= BUFFER_SIZE;
 	}
 
 	file.close();

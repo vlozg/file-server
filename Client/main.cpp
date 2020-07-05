@@ -55,15 +55,13 @@ void main()
 			break;
 	}
 	//Main loop
-	thread NotiListen;
-	NotiListen = thread(&Client::NotiHandle, &client);
 	while (1) {
 		if (!LogIn) {
 			client.Create(port);
 			client.Connect(ipAddress);
-			NotiListen = thread(&Client::NotiHandle, &client);
 			LogIn = true;
 		}
+		thread NotiListen = thread(&Client::NotiHandle, &client);
 		if (!client.IsConnected())
 			goto reconnect;
 		cout << "1. Upload a file to server !!! " << endl;
@@ -107,6 +105,7 @@ void main()
 		case 2:
 			// Gracefully close down everything
 			client.Disconnect();
+			NotiListen.join();
 			exit(1);
 		}
 	}

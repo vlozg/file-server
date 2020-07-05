@@ -15,8 +15,10 @@ private:
 	vector <string> fileName;
 	Socket serverSocket;
 	vector <Client> onlineConnection;
+
 	bool isUploading = false;
 	string uploadClient;
+
 public:
 	CMainWindow c;
 	Socket GetSocket() {
@@ -58,8 +60,20 @@ public:
 	*/
 	void UpdateDB(const string& fileName)
 	{
+		string file;
+		ifstream db(FILE_DB);
+		while (getline(db, file)) {
+			ifstream f(file);
+			//write the name to temp if file exists
+			if (file == fileName) {
+				return;
+			}
+		}
+		db.close();
 		ofstream out(FILE_DB, ios::app);
+		
 		out << fileName << "\n";
+		out.close();
 	}
 
 	int GetFileFromClient(Client&);
@@ -69,6 +83,7 @@ public:
 
 	void SendNoti(string noti, string name = "") {
 		noti = "1" + noti;
+
 		for (int i = 0; i < onlineConnection.size(); i++) {
 			if (name == onlineConnection[i].GetUsername())
 				continue;

@@ -13,6 +13,7 @@ private:
 	string username;
 	string password;
 	Socket clientSocket;
+
 public:
 	vector <string> fileName;
 	

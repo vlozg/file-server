@@ -144,6 +144,11 @@ int main()
 
 	// close server
 	myServer.Shutdown();
+	
+	// join all the thread
+	for (int i = 0; i < clientHandleThread.size(); i++){
+		clientHandleThread[i].join();
+	}
 	return 0;
 }
 

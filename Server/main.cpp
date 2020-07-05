@@ -1,6 +1,5 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include "Server.h"
-#include "main.h"
 
 vector <thread> clientHandleThread;
 

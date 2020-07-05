@@ -26,12 +26,15 @@ CMFCMainDlg::~CMFCMainDlg()
 
 void CMFCMainDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialogEx::DoDataExchange(pDX);
+    CDialogEx::DoDataExchange(pDX);
 
-	DDX_Control(pDX, IDC_NOTIFICATION_LIST, listNotiCtrl);
-	//listControl.AddString(_T("thanhduy"));  // add new notification
-	DDX_Control(pDX, IDC_FILE_LIST, listFileCtrl);
-	DDX_Text(pDX, IDC_FILEPATH_EDIT, v_filePath);
+    //listControl.AddString(_T("thanhduy"));  // add new notification
+    DDX_Control(pDX, IDC_FILE_LIST, listFileCtrl);
+    DDX_Text(pDX, IDC_FILEPATH_EDIT, v_filePath);
+    DDX_Control(pDX, IDC_LIST1, notiListCtrl);
+    notiListCtrl.SetExtendedStyle(LVS_EX_GRIDLINES);
+    notiListCtrl.InsertColumn(0, _T("Activity"), LVCFMT_LEFT, 200);
+    notiListCtrl.InsertColumn(1, _T("Time"), LVCFMT_LEFT,210);
 }
 
 //Drop file to Upload
@@ -109,4 +112,23 @@ void CMFCMainDlg::OnBnClickedBrowseButton()
     fileDlg.DoModal();
     v_filePath = fileDlg.GetPathName();
     UpdateData(FALSE);
+}
+
+
+//method add activity of other users 
+void CMFCMainDlg::addActivity(CString noti) {
+    CTime time = CTime::GetCurrentTime();
+    CString time_str = time.Format(_T("%d/%m/%Y - %I:%M %p"));
+    notiListCtrl.InsertItem(0, noti);
+    notiListCtrl.SetItemText(0, 1, time_str);
+}
+
+//Override OnOK
+void CMFCMainDlg::OnOK() {
+    return;
+}
+
+//Override OnCancel
+void CMFCMainDlg::OnCancel() {
+    this->~CMFCMainDlg();
 }

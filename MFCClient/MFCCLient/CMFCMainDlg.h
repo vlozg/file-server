@@ -21,11 +21,14 @@ protected:
 	afx_msg void OnDropFiles(HDROP hDropInfo);			//drop file to upload
 	DECLARE_MESSAGE_MAP()
 public:
-	afx_msg void OnBnClickedSignoutButton();
-	CListBox listNotiCtrl;								//control to notification list
+	afx_msg void OnBnClickedSignoutButton();			//control to notification list
 	CListBox listFileCtrl;								//control to Files list
 	CString v_filePath;									//file path for upload
 
 	afx_msg void OnBnClickedDownloadButton();
 	afx_msg void OnBnClickedBrowseButton();
+	CListCtrl notiListCtrl;
+	void addActivity(CString);
+	afx_msg void OnOK();
+	afx_msg void OnCancel();
 };

@@ -67,6 +67,7 @@ void CMFCFirst::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_PORT, v_port);
 }
 
+
 BEGIN_MESSAGE_MAP(CMFCFirst, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
@@ -164,9 +165,14 @@ string convertBYTEtoIPString(BYTE IP[4]) {
 	string IPAddress;
 	for (int i = 3; i>= 0; i--) {
 		string temp;
-		while (IP[i] > 0) {
-			IPAddress.insert(IPAddress.begin(), IP[i] % 10 + 48);
-			IP[i] = IP[i] / 10;
+		if (IP[i] == 0) {
+			IPAddress.insert(IPAddress.begin(), '0');
+		}
+		else {
+			while (IP[i] > 0) {
+				IPAddress.insert(IPAddress.begin(), IP[i] % 10 + 48);
+				IP[i] = IP[i] / 10;
+			}
 		}
 		IPAddress.insert(IPAddress.begin(), '.');
 	}
@@ -187,10 +193,37 @@ void CMFCFirst::OnBnClickedButtonConnect()
 	int port = _ttoi(v_port);
 	
 	//Handle connect to server
+	client.Create(port);
+	if (!client.Connect(IPAddress)) {
+		int msgboxID = MessageBox(
+			(LPCWSTR)L"Server is not currently available or wrong Server's IP!!!\n",
+			(LPCWSTR)L"Notification",
+			MB_ICONWARNING | MB_CANCELTRYCONTINUE | MB_DEFBUTTON2
+			);
+
+		switch (msgboxID)
+		{
+		//Exit 
+		case IDCANCEL:
+			OnCancel();
+			this->~CMFCFirst();
+		//reConnect
+		case IDTRYAGAIN:
+			OnBnClickedButtonConnect();
+			return;
+		//close message Box
+		case IDCONTINUE:
+			return;
+		}
+	}
 
 
 	//Exchange to Sign In dialog
 	CMFCSignInDlg newDlg;
 	this->OnCancel();
 	newDlg.DoModal();
+}
+
+void CMFCFirst::OnOK() {
+	OnBnClickedButtonConnect();
 }

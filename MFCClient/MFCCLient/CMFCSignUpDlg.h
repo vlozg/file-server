@@ -25,6 +25,6 @@ public:
 	afx_msg void OnBnClickedSignup1Button();
 	CString Username;
 	CString Password;
-	
 	CString conPassword;
+	afx_msg void OnOK();
 };

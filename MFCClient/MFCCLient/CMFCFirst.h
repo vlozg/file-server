@@ -35,6 +35,7 @@ public:
 	afx_msg void OnBnClickedButtonConnect();
 	CIPAddressCtrl ipCtrl;
 	CString v_port;
+	void OnOK();
 };
 
 

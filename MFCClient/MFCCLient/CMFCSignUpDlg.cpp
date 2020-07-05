@@ -75,6 +75,10 @@ bool checkValidName(CString s) {
 }
 
 
+void CMFCSignUpDlg::OnOK() {
+	OnBnClickedSignup1Button();
+}
+
 void CMFCSignUpDlg::OnBnClickedSignup1Button()
 {
 	//get data from boxees
@@ -90,6 +94,17 @@ void CMFCSignUpDlg::OnBnClickedSignup1Button()
 	}
 
 	//handle signup
+	string str_username(CW2A(Username.GetString()));
+	string str_password(CW2A(Password.GetString()));
+	client.SetUsername(str_username);
+	client.SetPassword(str_password);
+	if (!client.SignUp()) {
+		MessageBox(
+		(LPCWSTR)L"Username is existed!!\n        Try again!!",
+			(LPCWSTR)L"Notification",
+			MB_ICONWARNING);
+		return;
+	}
 
 
 	//return to signin menu

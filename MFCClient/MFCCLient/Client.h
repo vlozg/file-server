@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "CMenu.h"
+#include "CMFCMainDlg.h"
 
 
 class Client
@@ -27,7 +28,7 @@ public:
 	bool SignIn();
 	int SendFileToServer();
 	int GetFileFromServer();
-	void NotiHandle();
+	void NotiHandle(CMFCMainDlg *mainDlg);
 
 	bool IsConnected() {
 		return isConnected;

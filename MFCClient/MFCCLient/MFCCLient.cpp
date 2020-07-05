@@ -34,7 +34,7 @@ CMFCCLientApp::CMFCCLientApp()
 // The one and only CMFCCLientApp object
 
 CMFCCLientApp theApp;
-
+Client client;
 
 // CMFCCLientApp initialization
 

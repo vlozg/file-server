@@ -30,12 +30,13 @@
 #define IDC_NOTIFICATION                1015
 #define IDC_UPLOAD_BUTTON               1016
 #define IDC_SIGNOUT_BUTTON              1017
-#define IDC_NOTIFICATION_LIST           1019
 #define IDC_FILE_LIST                   1029
 #define IDC_REFRESH_BUTTON              1030
 #define IDC_FILEPATH_EDIT               1031
 #define IDC_BUTTON1                     1032
 #define IDC_BROWSE_BUTTON               1032
+#define IDC_PROGRESS1                   1033
+#define IDC_LIST1                       1034
 
 // Next default values for new objects
 // 
@@ -43,7 +44,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        140
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1033
+#define _APS_NEXT_CONTROL_VALUE         1035
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

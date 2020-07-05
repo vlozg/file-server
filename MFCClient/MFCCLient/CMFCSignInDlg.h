@@ -25,4 +25,5 @@ public:
 	CString Password;
 	afx_msg void OnBnClickedSignupButton();
 	afx_msg void OnBnClickedSigninButton();
+	afx_msg void OnOK();
 };

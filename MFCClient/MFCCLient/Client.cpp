@@ -12,7 +12,7 @@ bool Client::Connect(string ipAddress) {
 	}
 	isConnected = true;
 
-	bool outLoop = false;
+	/*bool outLoop = false;
 	while (!outLoop) {
 		switch (UI.drawFirstMenu(username, password)) {
 		case 1:
@@ -33,7 +33,7 @@ bool Client::Connect(string ipAddress) {
 	}
 	system("CLS");
 	UI.resetActivity();
-	UI.Initialize();
+	UI.Initialize();*/
 	return true;
 }
 
@@ -64,7 +64,7 @@ bool Client::SignIn() {
 			}
 		}
 		else {
-			UI.drawNotification("Server isn't available !!! Try again later");
+			//UI.drawNotification("Server isn't available !!! Try again later");
 			isConnected = false;
 			return false;
 		}
@@ -97,7 +97,7 @@ bool Client::SignUp() {
 			}
 		}
 		else {
-			UI.drawNotification("Server isn't available !!! Try again later");
+			//UI.drawNotification("Server isn't available !!! Try again later");
 			isConnected = false;
 			return false;
 		}
@@ -108,7 +108,7 @@ bool Client::SignUp() {
 /*
 This function check every package and handle if it's a notification
 */
-void Client::NotiHandle()
+void Client::NotiHandle(CMFCMainDlg* mainDlg)
 {
 	char buffer[BUFFER_SIZE];
 	int bytesReceived = 0;
@@ -157,7 +157,8 @@ void Client::NotiHandle()
 			isUpload = true;
 		}
 		else {
-			UI.drawNotification(data);
+			CString noti(data.c_str());
+			mainDlg->addActivity(noti);
 			isUpload = true;
 		}
 		notiHandle = false;

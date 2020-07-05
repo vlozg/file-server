@@ -34,3 +34,4 @@ public:
 //Client client;
 
 extern CMFCCLientApp theApp;
+extern Client client;

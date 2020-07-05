@@ -53,6 +53,9 @@ void CMFCSignInDlg::OnBnClickedSignupButton()
 	newDlg.DoModal();
 }
 
+void CMFCSignInDlg::OnOK() {
+	OnBnClickedSigninButton();
+}
 
 
 void CMFCSignInDlg::OnBnClickedSigninButton()
@@ -71,9 +74,22 @@ void CMFCSignInDlg::OnBnClickedSigninButton()
 	}
 	
 	//handle sign in
-
-
+	string str_username(CW2A(Username.GetString()));
+	string str_password(CW2A(Password.GetString()));
+	client.SetUsername(str_username);
+	client.SetPassword(str_password);
+	if (!client.SignIn()) {
+		MessageBox(
+		(LPCWSTR)L"Username or Password is incorrect!!\nTry again!!",
+		(LPCWSTR)L"Notification",
+		MB_ICONWARNING );
+		return;
+	}
+	//notification listen thread;
+	MessageBox(_T("Sign in Success!!"));
 	CMFCMainDlg newDlg;
+	thread NotiListen;
+	NotiListen = thread(&Client::NotiHandle, &client, &newDlg);
 	this->~CMFCSignInDlg();
 	newDlg.DoModal();
 }

@@ -21,6 +21,7 @@ class Socket
 private:
 	SOCKET sock;
 	SA_IN hint;
+
 public: 
 	Socket() {
 		hint.sin_family = AF_INET;
@@ -33,7 +34,7 @@ public:
 	SOCKET GetSock() {return sock;}
 	SA_IN GetSA_IN() {return hint;}
 
-	// initialize socket
+	//Initialize socket
 	void Initialize(int port) {
 		// create a socket with TCP protocol
 		sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -59,6 +60,7 @@ public:
 		if (retCode == SOCKET_ERROR)
 			Error("Listen failed: %d\n");
 	}
+
 	// accept a connection
 	SOCKET Accpet(Socket connection) { 
 		int connectionSize = sizeof(connection.GetSA_IN());
@@ -76,6 +78,7 @@ public:
 		
 		return connect(sock, (SA*)&hint, sizeof(hint));
 	}
+
 	// disconnect socket
 	void Disconnect() {closesocket(sock);}
 
@@ -83,9 +86,7 @@ public:
 		ErrorExit(err, WSAGetLastError());
 	}
 
-	/*
-	Function that handle errors when the server operate
-	*/
+	//Function that handle errors when the server operate
 	void ErrorExit(const char* format, ...)
 	{
 		va_list	args;
@@ -101,6 +102,7 @@ public:
 	}
 };
 
+//Override essential function in winsock
 int Send(SOCKET receiver, const char* buffer, int32_t size, int flag);
 int Send_s(SOCKET receiver,const string& buffer, int flag);
 int Recv(SOCKET sender, char* buffer, int32_t size, int flag);

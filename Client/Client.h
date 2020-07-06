@@ -6,135 +6,76 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <condition_variable>
-#include "CMenu.h"
+#include "Socket.h"
 
+using namespace std;
 
 class Client
 {
 private:
 	string username;
-	string password;
 	Socket clientSocket;
-	bool isConnected;
-	
+	bool isConnected = false;
+
+	thread* notiThread;
 	mutex mutex_;
 	condition_variable covaNoti, covaRecv;
-	bool notiHandle = false;	//Flag, true mean allow 2nd thread peek every packet
+	//Flags, true mean allow 2nd thread peek and process every packet
+	bool notiHandle = false;
 	bool isNotiListenOn = false;
+	void(*pPrintNoti) (string) = NULL;
+
+	string lastError;
 
 public:
-	vector <string> fileName;
-	CMenu UI;
-	// declare in Client.cpp
-	bool Connect(string ipAddress);
-	bool SignUp();
-	bool SignIn();
-	int SendFileToServer();
-	int GetFileFromServer();
-	void NotiHandle();
 
-	bool IsConnected() {
-		return isConnected;
+	Client() {};
+	~Client() {};
+	Socket GetClientSocket() { return clientSocket; }
+	string GetLastError() { return lastError; }
+	void SetError(string err) { lastError = err; }
+	void SetError(int err) { lastError = to_string(err); }
+	void SocketError() {
+		isConnected = false;
+		SetError(WSAGetLastError());
+	}
+
+	void Create(int port) { clientSocket.Initialize(port); }
+	bool Connect(string ipAddress, int port);
+	void Disconnect();
+	bool IsConnected() { return isConnected; }
+
+	bool SignUp(string& name, string& pass);
+	bool SignIn(string& name, string& pass);
+	void SignOut();
+	string GetUsername() { return username; }
+	Socket GetSocket() { return clientSocket; }
+
+	int UploadCall() {
+		//Send flag to server
+		if (Send_s(clientSocket.GetSock(), "Upload", 0) == SOCKET_ERROR)
+		{
+			SocketError();
+			return -1;
+		}
+		return 1;
+	}
+	int DownloadCall() {
+		//Send flag to server
+		if (Send_s(clientSocket.GetSock(), "Download", 0) == SOCKET_ERROR)
+		{
+			SocketError();
+			return -1;
+		}
+		return 1;
 	}
 
 	int GetFile(string& fileName, const string& dir);
 	int SendFile(const SOCKET& freceiver, const string& dir);
 
-	//Special Recv function that filter out every noti packet
-	int Recv_NonNoti(char* buffer, int32_t size, int flag) {
-		char tbuffer[BUFFER_SIZE];
-		int bytesReceived = 0;
-
-		{
-			//cout << "Recv wait\n";
-			unique_lock<mutex> lck(mutex_);
-			covaRecv.wait(lck, [this] { return !(notiHandle && isNotiListenOn); });
-			//cout << "Recv awake\n";
-			bytesReceived = Recv(clientSocket.GetSock(), tbuffer, BUFFER_SIZE, flag);
-			notiHandle = true;
-		}
-		//cout << "R";
-		covaNoti.notify_one();
-		if (bytesReceived == SOCKET_ERROR) return bytesReceived;
-
-		//Remove header (post-processing)
-		size = bytesReceived - 1;
-		memcpy(buffer,tbuffer+1,size);
-		return size;
-	}
-
-	//Special Recv function that filter out every noti packet
-	int Recv_NonNoti(string& buffer, int flag) {
-		int32_t size;
-		char tbuffer[BUFFER_SIZE];
-		int bytesReceived = 0;
-
-		{
-			//cout << "Recv wait\n";
-			unique_lock<mutex> lck(mutex_);
-			covaRecv.wait(lck, [this] { return !(notiHandle && isNotiListenOn); });
-			//cout << "Recv awake\n";
-			bytesReceived = Recv(clientSocket.GetSock(), tbuffer, BUFFER_SIZE, flag);
-			notiHandle = true;
-		}
-		//cout << "R";
-		covaNoti.notify_one();
-		if (bytesReceived == SOCKET_ERROR) return bytesReceived;
-
-		//Remove header
-		size = bytesReceived - 1;
-		buffer = (tbuffer + 1);
-		return size;
-	}
-
-	string GetUsername() {
-		return username;
-	}
-	string GetPassword() {
-		return password;
-	}
-	Socket GetSocket() {
-		return clientSocket;
-	}
-	void SetUsername(string newUsername) {
-		username = newUsername;
-	}
-	void SetPassword(string newPassword) {
-		password = newPassword;
-	}
-
-	Socket getClientSocket() {
-		return clientSocket;
-	}
-
-	void Disconnect() {
-		string noti = "Disconnect";
-		Send(clientSocket.GetSock(), noti.c_str(), noti.length() + 1, 0);
-		clientSocket.Disconnect();
-	}
-	
-	void Create(int port) {
-		
-		clientSocket.Initialize(port);
-	}
-
-	void UIReset() {
-		UI.resetActivity();
-		system("CLS");
-		UI.Initialize();
-	}
-
-	void ServerShutdown() {
-		UI.drawNotification("SERVER SHUTDOWN !!! Quitting in");
-		UI.drawNotification("3...");
-		Sleep(1000);
-		UI.drawNotification("2...");
-		Sleep(1000);
-		UI.drawNotification("1...");
-		Sleep(1000);
-		exit(1);
-	}
-
-	Client() {};
-	~Client() {};
+	void NotiHandle();
+	void SetPrintNotiFunction(void(*f)(string)) { pPrintNoti = f; }
+	void TurnOffNotiHandle() { isNotiListenOn = false; }
+	int Recv_NonNoti(char* buffer, int32_t size, int flag);
+	int Recv_NonNoti(string& buffer, int flag);
 };

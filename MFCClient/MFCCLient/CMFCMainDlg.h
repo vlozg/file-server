@@ -17,6 +17,7 @@ public:
 #endif
 
 protected:
+	virtual BOOL OnInitDialog();
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	afx_msg void OnDropFiles(HDROP hDropInfo);			//drop file to upload
 	DECLARE_MESSAGE_MAP()
@@ -31,4 +32,8 @@ public:
 	void addActivity(CString);
 	afx_msg void OnOK();
 	afx_msg void OnCancel();
+	thread NotiListen;
+	virtual BOOL PreTranslateMessage(MSG* pMsg);		//disable ESC quit Program
+
+	afx_msg void OnBnClickedUploadButton();
 };

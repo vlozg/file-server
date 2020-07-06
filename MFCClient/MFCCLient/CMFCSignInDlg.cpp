@@ -33,6 +33,7 @@ void CMFCSignInDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_USERNAME_EDIT, Username);
 	DDX_Text(pDX, IDC_PASSWORD_EDIT, Password);
+
 }
 
 
@@ -78,18 +79,24 @@ void CMFCSignInDlg::OnBnClickedSigninButton()
 	string str_password(CW2A(Password.GetString()));
 	client.SetUsername(str_username);
 	client.SetPassword(str_password);
-	if (!client.SignIn()) {
+	int res = client.SignIn();
+	if (res == 0) {
 		MessageBox(
 		(LPCWSTR)L"Username or Password is incorrect!!\nTry again!!",
 		(LPCWSTR)L"Notification",
 		MB_ICONWARNING );
 		return;
 	}
+	else if (res == -1) {
+		MessageBox(
+		(LPCWSTR)L"Server is not available\n         Try again!!",
+		(LPCWSTR)L"Notification",
+		MB_ICONWARNING);
+		return;
+	}
 	//notification listen thread;
 	MessageBox(_T("Sign in Success!!")); 
 	CMFCMainDlg newDlg;
-	NotiListen = new thread(&Client::NotiHandle, client);
-	client.mainDlg = &newDlg;
 	this->~CMFCSignInDlg();
 	newDlg.DoModal();
 }

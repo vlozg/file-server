@@ -98,11 +98,19 @@ void CMFCSignUpDlg::OnBnClickedSignup1Button()
 	string str_password(CW2A(Password.GetString()));
 	client.SetUsername(str_username);
 	client.SetPassword(str_password);
-	if (!client.SignUp()) {
+	int res = client.SignUp();
+	if (res == 0) {
 		MessageBox(
 		(LPCWSTR)L"Username is existed!!\n        Try again!!",
 			(LPCWSTR)L"Notification",
 			MB_ICONWARNING);
+		return;
+	}
+	else if (res == -1) {
+		MessageBox(
+		(LPCWSTR)L"Server is not available\n         Try again!!",
+		(LPCWSTR)L"Notification",
+		MB_ICONWARNING);
 		return;
 	}
 

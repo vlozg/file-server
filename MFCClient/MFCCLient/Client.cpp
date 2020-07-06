@@ -108,63 +108,65 @@ bool Client::SignUp() {
 /*
 This function check every package and handle if it's a notification
 */
-void Client::NotiHandle(CMFCMainDlg* mainDlg)
+void Client::NotiHandle()
 {
-	char buffer[BUFFER_SIZE];
-	int bytesReceived = 0;
-	while (bytesReceived != SOCKET_ERROR) 
-	{
-		//Peek into every packet
-		do
+	if (mainDlg != NULL) {
+		char buffer[BUFFER_SIZE];
+		int bytesReceived = 0;
+		while (bytesReceived != SOCKET_ERROR)
 		{
-			bytesReceived = recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, MSG_PEEK);
+			//Peek into every packet
+			do
+			{
+				bytesReceived = recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, MSG_PEEK);
+				if (bytesReceived == SOCKET_ERROR)
+				{
+					ServerShutdown();
+					return;
+				}
+			} while (bytesReceived < (sizeof(int32_t) + 1));	//Only accept if peek enough bytes to check
+
+			if (buffer[sizeof(int32_t)] != '1')	//Check for noti flag
+			{
+				notiHandle = false;
+				continue;
+			}
+
+			//If Recv_NonNoti is running, check if it allow notiHandle
+			if (isRecv)
+			{
+				//Wait until noti handle allowed
+				while (!notiHandle);
+				if (!isRecv)
+					continue;
+			}
+
+			//Get noti packet
+			bytesReceived = Recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, 0);
 			if (bytesReceived == SOCKET_ERROR)
 			{
 				ServerShutdown();
 				return;
 			}
-		} while (bytesReceived < (sizeof(int32_t) + 1));	//Only accept if peek enough bytes to check
-
-		if (buffer[sizeof(int32_t)] != '1')	//Check for noti flag
-		{
+			string data = buffer + 1;
+			string isUploadNoti = "Other client is uploading!!! Please wait a second...";
+			if (data[0] == 'F') {
+				if (isUpload != false)
+					isUpload = false;
+			}
+			else if (data[0] == 'T') {
+				isUpload = true;
+			}
+			else {
+				CString noti(data.c_str());
+				mainDlg->addActivity(noti);
+				isUpload = true;
+			}
 			notiHandle = false;
-			continue;
 		}
-
-		//If Recv_NonNoti is running, check if it allow notiHandle
-		if (isRecv)
-		{
-			//Wait until noti handle allowed
-			while (!notiHandle);
-			if (!isRecv)
-				continue;
-		}
-
-		//Get noti packet
-		bytesReceived = Recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, 0);
-		if (bytesReceived == SOCKET_ERROR)
-		{
-			ServerShutdown();
-			return;
-		}
-		string data = buffer + 1;
-		string isUploadNoti = "Other client is uploading!!! Please wait a second...";
-		if (data[0] == 'F') {
-			if (isUpload != false)
-			isUpload = false;
-		}
-		else if (data[0] == 'T') {
-			isUpload = true;
-		}
-		else {
-			CString noti(data.c_str());
-			mainDlg->addActivity(noti);
-			isUpload = true;
-		}
-		notiHandle = false;
+		ServerShutdown();
+		return;
 	}
-	ServerShutdown();
-	return;
 }
 
 /*
@@ -205,8 +207,9 @@ int Client::SendFileToServer()
 	bool signal = false;
 	do {
 		if (!isUpload && !signal) {
-			UI.drawNotification("Another client is uploading !!!");
-			UI.drawNotification("Please wait a send !!!");
+			/*UI.drawNotification("Another client is uploading !!!");
+			UI.drawNotification("Please wait a send !!!");*/
+			mainDlg->MessageBox(_T("Another user is uploading\n            Please wait!!!"));
 			signal = true;
 		}
 		string notification = "Upload";
@@ -224,7 +227,8 @@ int Client::SendFileToServer()
 	switch(1)
 	{
 	case 1:
-		cout << "Upload successful!\n";
+		//cout << "Upload successful!\n";
+		mainDlg->MessageBox(_T("Upload successful!!"));
 		return 1;
 	case -1:
 		return -1;

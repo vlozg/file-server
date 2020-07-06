@@ -74,14 +74,17 @@ END_MESSAGE_MAP()
 
 // CMFCMainDlg message handlers
 
-
 void CMFCMainDlg::OnBnClickedSignoutButton()
 {
 	// TODO: Add your control notification handler code here
 	//handle
-
-
+    client.Disconnect();
+    client.mainDlg = NULL;
+    //delete client;
+   // NotiListen->~thread();
 	//sign out
+    client.Create(client.GetPort());
+    client.Connect(client.GetIPAddress());
 	CMFCSignInDlg newDlg;
 	this->~CMFCMainDlg();
 	newDlg.DoModal();

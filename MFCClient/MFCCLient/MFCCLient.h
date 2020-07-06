@@ -35,3 +35,4 @@ public:
 
 extern CMFCCLientApp theApp;
 extern Client client;
+extern thread* NotiListen;

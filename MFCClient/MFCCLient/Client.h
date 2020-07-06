@@ -19,16 +19,19 @@ private:
 	bool isRecv = false;	//Flag
 	bool notiHandle = false;	//Flag
 	bool isUpload = true; //flag
+	string IPAddress;
+	int port;
 public:
 	vector <string> fileName;
 	CMenu1 UI;
+	CMFCMainDlg* mainDlg;
 	// declare in Client.cpp
 	bool Connect(string ipAddress);
 	bool SignUp();
 	bool SignIn();
 	int SendFileToServer();
 	int GetFileFromServer();
-	void NotiHandle(CMFCMainDlg *mainDlg);
+	void NotiHandle();
 
 	bool IsConnected() {
 		return isConnected;
@@ -153,6 +156,22 @@ public:
 		UI.drawNotification("1...");
 		Sleep(1000);
 		exit(1);
+	}
+
+	void SetIPAddress(string newIP) {
+		IPAddress = newIP;
+	}
+
+	string GetIPAddress() {
+		return IPAddress;
+	}
+
+	int GetPort() {
+		return port;
+	}
+
+	void SetPort(int newPort) {
+		port = newPort;
 	}
 
 	Client() {};

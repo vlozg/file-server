@@ -86,10 +86,10 @@ void CMFCSignInDlg::OnBnClickedSigninButton()
 		return;
 	}
 	//notification listen thread;
-	MessageBox(_T("Sign in Success!!"));
+	MessageBox(_T("Sign in Success!!")); 
 	CMFCMainDlg newDlg;
-	thread NotiListen;
-	NotiListen = thread(&Client::NotiHandle, &client, &newDlg);
+	NotiListen = new thread(&Client::NotiHandle, client);
+	client.mainDlg = &newDlg;
 	this->~CMFCSignInDlg();
 	newDlg.DoModal();
 }

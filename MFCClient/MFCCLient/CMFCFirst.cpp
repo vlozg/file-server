@@ -187,10 +187,12 @@ void CMFCFirst::OnBnClickedButtonConnect()
 	BYTE octet[4];
 	ipCtrl.GetAddress(octet[0], octet[1], octet[2], octet[3]);
 	string IPAddress = convertBYTEtoIPString(octet);
+	client.SetIPAddress(IPAddress);
 	
 	//get port from dialog	
 	UpdateData(TRUE);
 	int port = _ttoi(v_port);
+	client.SetPort(port);
 	
 	//Handle connect to server
 	client.Create(port);

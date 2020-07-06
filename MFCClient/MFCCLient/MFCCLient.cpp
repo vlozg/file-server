@@ -35,7 +35,7 @@ CMFCCLientApp::CMFCCLientApp()
 
 CMFCCLientApp theApp;
 Client client;
-
+thread* NotiListen;
 // CMFCCLientApp initialization
 
 BOOL CMFCCLientApp::InitInstance()

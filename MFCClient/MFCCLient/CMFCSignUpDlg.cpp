@@ -96,9 +96,7 @@ void CMFCSignUpDlg::OnBnClickedSignup1Button()
 	//handle signup
 	string str_username(CW2A(Username.GetString()));
 	string str_password(CW2A(Password.GetString()));
-	client.SetUsername(str_username);
-	client.SetPassword(str_password);
-	int res = client.SignUp();
+	int res = client.SignUp(str_username,str_password);
 	if (res == 0) {
 		MessageBox(
 		(LPCWSTR)L"Username is existed!!\n        Try again!!",

@@ -77,9 +77,7 @@ void CMFCSignInDlg::OnBnClickedSigninButton()
 	//handle sign in
 	string str_username(CW2A(Username.GetString()));
 	string str_password(CW2A(Password.GetString()));
-	client.SetUsername(str_username);
-	client.SetPassword(str_password);
-	int res = client.SignIn();
+	int res = client.SignIn(str_username, str_password);
 	if (res == 0) {
 		MessageBox(
 		(LPCWSTR)L"Username or Password is incorrect!!\nTry again!!",
@@ -87,11 +85,12 @@ void CMFCSignInDlg::OnBnClickedSigninButton()
 		MB_ICONWARNING );
 		return;
 	}
-	else if (res == -1) {
+	if (!client.GetLastError().empty()) {
+		CString noti(client.GetLastError().c_str());
 		MessageBox(
-		(LPCWSTR)L"Server is not available\n         Try again!!",
-		(LPCWSTR)L"Notification",
-		MB_ICONWARNING);
+		(LPCWSTR)noti,
+		(LPCWSTR)L"ERROR",
+		MB_ICONERROR);
 		return;
 	}
 	//notification listen thread;

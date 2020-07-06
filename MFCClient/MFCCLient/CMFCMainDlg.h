@@ -29,10 +29,10 @@ public:
 	afx_msg void OnBnClickedDownloadButton();
 	afx_msg void OnBnClickedBrowseButton();
 	CListCtrl notiListCtrl;
-	void addActivity(CString);
+	void addActivity(string noti);
 	afx_msg void OnOK();
 	afx_msg void OnCancel();
-	thread NotiListen;
+	//thread NotiListen;
 	virtual BOOL PreTranslateMessage(MSG* pMsg);		//disable ESC quit Program
 
 	afx_msg void OnBnClickedUploadButton();

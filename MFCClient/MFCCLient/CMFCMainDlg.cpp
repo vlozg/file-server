@@ -39,9 +39,8 @@ BOOL CMFCMainDlg::OnInitDialog()
     CDialogEx::OnInitDialog();
 
     // Add "About..." menu item to system menu.
-    client.mainDlg = this;
-    NotiListen = thread(&Client::NotiHandle, &client);
 
+   // client.SetPrintNotiFunction();
     notiListCtrl.SetExtendedStyle(LVS_EX_GRIDLINES);
     notiListCtrl.InsertColumn(0, _T("Activity"), LVCFMT_LEFT, 200);
     notiListCtrl.InsertColumn(1, _T("Time"), LVCFMT_LEFT, 210);
@@ -95,11 +94,9 @@ void CMFCMainDlg::OnBnClickedSignoutButton()
 	//handle
     client.Disconnect();
 	//sign out
-    NotiListen.join();
+    //NotiListen.join();
    
     //client.mainDlg = NULL;
-    client.Create(client.GetPort());
-    client.Connect(client.GetIP());
 	CMFCSignInDlg newDlg;
 	this->~CMFCMainDlg();
 	newDlg.DoModal();
@@ -134,10 +131,11 @@ void CMFCMainDlg::OnBnClickedBrowseButton()
 
 
 //method add activity of other users 
-void CMFCMainDlg::addActivity(CString noti) {
+void CMFCMainDlg::addActivity(string noti) {
+    CString noti_Cstr(noti.c_str());
     CTime time = CTime::GetCurrentTime();
     CString time_str = time.Format(_T("%d/%m/%Y - %I:%M %p"));
-    notiListCtrl.InsertItem(0, noti);
+    notiListCtrl.InsertItem(0, noti_Cstr);
     notiListCtrl.SetItemText(0, 1, time_str);
 }
 
@@ -149,7 +147,7 @@ void CMFCMainDlg::OnOK() {
 //Override OnCancel
 void CMFCMainDlg::OnCancel() {
         client.Disconnect();
-        NotiListen.join();
+      //  NotiListen.join();
         this->~CMFCMainDlg();
 }
 
@@ -179,7 +177,9 @@ void CMFCMainDlg::OnBnClickedUploadButton()
         MB_ICONERROR);
         return;
     }
-    client.SendFileToServer();
+    string filepath(CW2A(v_filePath.GetString()));
+    client.UploadCall();
+    client.SendFile(client.GetSocket().GetSock(), filepath);
     v_filePath.Empty();
     UpdateData(FALSE);
 }

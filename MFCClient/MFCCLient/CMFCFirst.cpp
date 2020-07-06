@@ -187,16 +187,14 @@ void CMFCFirst::OnBnClickedButtonConnect()
 	BYTE octet[4];
 	ipCtrl.GetAddress(octet[0], octet[1], octet[2], octet[3]);
 	string IPAddress = convertBYTEtoIPString(octet);
-	client.SetIPAddress(IPAddress);
 	
 	//get port from dialog	
 	UpdateData(TRUE);
 	int port = _ttoi(v_port);
-	client.SetPort(port);
 	
 	//Handle connect to server
 	client.Create(port);
-	if (!client.Connect(IPAddress)) {
+	if (!client.Connect(IPAddress, port)) {
 		int msgboxID = MessageBox(
 			(LPCWSTR)L"Server is not currently available or wrong Server's IP!!!\n",
 			(LPCWSTR)L"Notification",

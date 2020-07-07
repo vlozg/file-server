@@ -59,13 +59,15 @@ public:
 		}
 		return 1;
 	}
-	int DownloadCall() {
+	int DownloadCall(string& db) {
 		//Send flag to server
 		if (Send_s(clientSocket.GetSock(), "Download", 0) == SOCKET_ERROR)
 		{
 			SocketError();
 			return -1;
 		}
+
+		GetFile(db, "");
 		return 1;
 	}
 

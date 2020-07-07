@@ -77,7 +77,7 @@ public:
 	template <class T>
 	void NotiHandle(T* p, void(T::*pFunc)(string));
 	template <class T>
-	void TurnOnNotiHandle(T* p, void(T::* pFunc)(string)) { notiThread = new thread(&NotiHandle, this, p, pFunc); }
+	void TurnOnNotiHandle(T* p, void(T::* pFunc)(string)) { notiThread = new thread(&NotiHandle<T>, this, p, pFunc); }
 	void TurnOffNotiHandle() { isNotiListenOn = false; }
 	int Recv_NonNoti(char* buffer, int32_t size, int flag);
 	int Recv_NonNoti(string& buffer, int flag);

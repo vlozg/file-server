@@ -93,8 +93,9 @@ void CMFCSignInDlg::OnBnClickedSigninButton()
 		MB_ICONERROR);
 		return;
 	}*/
+
 	//sign in success
-	MessageBox(_T("Sign in Success!!")); 
+	//MessageBox(_T("Sign in Success!!")); 
 	CMFCMainDlg newDlg;
 	this->~CMFCSignInDlg();
 	newDlg.DoModal();

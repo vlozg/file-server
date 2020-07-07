@@ -107,7 +107,9 @@ BOOL CMFCFirst::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
-	// TODO: Add extra initialization here
+	//////////////////////////////////////////////////////////////
+	//////////// TODO: Add extra initialization here /////////////
+	//////////////////////////////////////////////////////////////
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }

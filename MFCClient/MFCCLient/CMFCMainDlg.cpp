@@ -47,7 +47,7 @@ BOOL CMFCMainDlg::OnInitDialog()
     notiListCtrl.InsertColumn(1, _T("Time"), LVCFMT_LEFT, 210);
     //draw file list
     string fileDB;
-   /* client.DownloadCall(fileDB);
+    /*client.DownloadCall(fileDB);
     ifstream db(fileDB);
     string temp;
     int count = 0;
@@ -58,7 +58,6 @@ BOOL CMFCMainDlg::OnInitDialog()
     }
     db.close();*/
 
-    // TODO: Add extra initialization here
 
     return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -170,9 +169,8 @@ void CMFCMainDlg::OnOK() {
 
 //Override OnCancel
 void CMFCMainDlg::OnCancel() {
-        client.Disconnect();
-      //  NotiListen.join();
-        this->~CMFCMainDlg();
+    client.Disconnect();
+    this->~CMFCMainDlg();
 }
 
 

@@ -17,6 +17,8 @@ private:
 	string username;
 	Socket clientSocket;
 	bool isConnected = false;
+	string ipServer; 
+	int portServer;
 
 	thread* notiThread;
 	mutex mutex_;
@@ -42,6 +44,7 @@ public:
 
 	void Create(int port) { clientSocket.Initialize(port); }
 	bool Connect(string ipAddress, int port);
+	bool ReConnect();
 	void Disconnect();
 	bool IsConnected() { return isConnected; }
 
@@ -90,7 +93,8 @@ public:
 		{
 			//cout << "Noti wait\n";
 			unique_lock<mutex> lck(mutex_);
-			covaNoti.wait(lck, [this] { return (notiHandle); });
+			covaNoti.wait(lck, [this] { return (notiHandle || !isNotiListenOn); });
+			if (!isNotiListenOn) break;
 			//cout << "Noti awake\n";
 
 			//Peek into every packet
@@ -139,8 +143,12 @@ public:
 	void TurnOnNotiHandle(T* p, void(T::* pFunc)(string)) { notiThread = new thread(&Client::NotiHandle<T>, this, p, pFunc); }
 	void TurnOffNotiHandle() { 
 		isNotiListenOn = false;
-		notiThread->join();
-		delete notiThread; 
+		covaNoti.notify_one();
+		if (notiThread != NULL) 
+		{
+			notiThread->join();
+			delete notiThread;
+		}
 	}
 	int Recv_NonNoti(char* buffer, int32_t size, int flag);
 	int Recv_NonNoti(string& buffer, int flag);

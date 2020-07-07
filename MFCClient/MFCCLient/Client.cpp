@@ -9,8 +9,31 @@
 */
 bool Client::Connect(string ipAddress, int port)
 {
+	portServer = port;
+	ipServer = ipAddress;
+
 	clientSocket.Initialize(port);
 	if (clientSocket.Connect(ipAddress) == SOCKET_ERROR)
+	{
+		//Must close socket in order to be able to call connect again
+		clientSocket.Disconnect();
+		SocketError();
+		return false;
+	}
+	isConnected = true;
+	return true;
+}
+
+/*
+	Connect to server using the given address from last call of Connect
+	Return false if the connection failed
+
+	(error can be retrived with GetLastError)
+*/
+bool Client::ReConnect()
+{
+	clientSocket.Initialize(portServer);
+	if (clientSocket.Connect(ipServer) == SOCKET_ERROR)
 	{
 		//Must close socket in order to be able to call connect again
 		clientSocket.Disconnect();
@@ -30,9 +53,8 @@ void Client::Disconnect()
 	Send_s(clientSocket.GetSock(), "Disconnect", 0);
 	isConnected = false;
 	isNotiListenOn = false;
-	notiThread->join();
-	delete notiThread;
 	clientSocket.Disconnect();
+	TurnOffNotiHandle();
 }
 
 /*
@@ -102,8 +124,8 @@ bool Client::SignUp(string& name, string& pass)
 */
 void Client::SignOut()
 {
-	Send_s(clientSocket.GetSock(), "Disconnect", 0);
-	isConnected = false;
+	Disconnect();
+	ReConnect();
 }
 
 /*

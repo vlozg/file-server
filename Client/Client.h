@@ -23,7 +23,6 @@ private:
 	//Flags, true mean allow 2nd thread peek and process every packet
 	bool notiHandle = false;
 	bool isNotiListenOn = false;
-	void(*pPrintNoti) (string) = NULL;
 
 	string lastError;
 
@@ -73,8 +72,10 @@ public:
 	int GetFile(string& fileName, const string& dir);
 	int SendFile(const SOCKET& freceiver, const string& dir);
 
-	void NotiHandle();
-	void SetPrintNotiFunction(void(*f)(string)) { pPrintNoti = f; }
+	template <class T>
+	void NotiHandle(T* p, void(T::*pFunc)(string));
+	template <class T>
+	void TurnOnNotiHandle(T* p, void(T::* pFunc)(string)) { notiThread = new thread(&NotiHandle, this, p, pFunc); }
 	void TurnOffNotiHandle() { isNotiListenOn = false; }
 	int Recv_NonNoti(char* buffer, int32_t size, int flag);
 	int Recv_NonNoti(string& buffer, int flag);

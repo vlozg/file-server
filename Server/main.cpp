@@ -25,6 +25,9 @@ int HandleFlagSignal(string flag) {
 	else if (flag.compare("Disconnect") == 0) {
 		return 5;
 	}
+	else if (flag.compare("GetDB") == 0) {
+		return 6;
+	}
 	//other flag
 	return 6;
 }
@@ -83,6 +86,12 @@ void HandleConnection(SOCKET clientSocket) {
 		case 5:
 			myServer.ClientDisconnectLog(client);
 			clientDisconnect = true;
+			break;
+		case 6:
+			//check database before send to client
+			myServer.DataBaseScan();
+			//Send file database for client to choose
+			myServer.SendFileForServer(client.GetSocket().GetSock(), FILE_DB);
 			break;
 		default:
 			myServer.ClientDisconnectLog(client);

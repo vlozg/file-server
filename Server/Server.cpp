@@ -163,23 +163,16 @@ vector<string> Server::InputFileToSend(const SOCKET& client)
 	//Send file database for client to choose
 	SendFileForServer(client, FILE_DB);
 
-	//Get files name
-	ifstream db(FILE_DB);
-	string temp;
-	while (getline(db, temp)) listFile.push_back(temp);
-	db.close();
-
 	//Get file name from client
 	int bytesReceived = Recv(client, buffer, BUFFER_SIZE, 0);
 	if (bytesReceived == SOCKET_ERROR) return choices;
 
-	int i = 0;
-	while (buffer[i] != '\0')
-	{
-		choices.push_back(listFile[buffer[i] - 1]);
-		i++;
-	}
-
+	string fname = buffer;
+	ifstream f(fname);
+	if (!f.good())
+		return choices;
+	
+	choices.push_back(fname);
 	return choices;
 }
 

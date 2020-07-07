@@ -54,8 +54,6 @@ void HandleConnection(SOCKET clientSocket) {
 		string notification;
 		notification.append(buffer);		//convert char* to string
 
-		
-		unique_lock<mutex> lck(mutex_);
 		condition_variable cova_upload;
 
 		switch (HandleFlagSignal(notification)) {
@@ -66,13 +64,17 @@ void HandleConnection(SOCKET clientSocket) {
 			myServer.SignUp(client);
 			break;
 		case 3:
+		{
+			unique_lock<mutex> lck(mutex_);
 			while (myServer.isUpload()) {
 				cova_upload.wait(lck);
 			}
+			myServer.SendNoti("F", client.GetUsername());
+			myServer.SendNoti("T", "", client.GetUsername());
 			myServer.GetFileFromClient(client);
-			myServer.SendNoti("T");
 			myServer.setUploadState(false);
 			lck.unlock();
+		}
 			cova_upload.notify_one();
 			break;
 		case 4:

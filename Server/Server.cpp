@@ -122,32 +122,26 @@ Return:
 */
 int Server::GetFileFromClient(Client& client)
 {
-	SendNoti("F", client.GetUsername());
 	isUploading = true;
-
 	string fileName;
 
 	const SOCKET clientSocket = client.GetSocket().GetSock();
 
 	//Start receiving file from client
 	int err = GetFile(clientSocket, fileName, "");
+	isUploading = false;
 	switch (err)
 	{
 	case 1:
 		UpdateDB(fileName);
 		c.drawLog(client.GetUsername() + " uploaded file " + fileName + "!!!\n");
-		isUploading = false;
-		
 		return 1;
 	case -1:
-		isUploading = false;
 		return -1;
 	case -2:
-		isUploading = false;
 		return -2;
 
 	default:
-		isUploading = false;
 		break;
 	}
 	return 0;

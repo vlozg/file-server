@@ -23,9 +23,35 @@ private:
 	SA_IN hint;
 public: 
 	Socket() {
+		// Initialize WinSock
+		WSADATA wsData;
+		WORD ver = MAKEWORD(2, 2);
+		int wsResult = WSAStartup(ver, &wsData);
+		if (wsResult != 0)
+		{
+			cerr << "Can't start Winsock, Err #" << wsResult << endl;
+			WSACleanup();
+		}
+		
+		WORD wVersionRequested = MAKEWORD(2, 2);// version
+		int wsOk = WSAStartup(wVersionRequested, &wsData);
+		if (wsOk != 0) {
+			cerr << "Start up failed!! Quitting" << endl;;
+			WSACleanup();
+			//return 0;
+		}
+
+		if (LOBYTE(wsData.wVersion) != LOBYTE(wVersionRequested) ||
+			HIBYTE(wsData.wVersion) != HIBYTE(wVersionRequested))
+		{
+			cout << "Supported version is too low" << endl;
+			WSACleanup();
+			//return 0;
+		}
 		hint.sin_family = AF_INET;
 		hint.sin_port = htons(54000);
 		hint.sin_addr.s_addr = htonl(INADDR_ANY);
+		
 	};
 
 	~Socket() {};

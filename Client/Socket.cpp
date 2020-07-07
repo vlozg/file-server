@@ -64,7 +64,7 @@ int Recv(SOCKET sender, char* buffer, int32_t size, int flag)
 			return receiveResult;
 		bytesReceived += receiveResult;	//Add up the number of received bytes
 	} while (bytesReceived < sizeof(size));	//In case bytes reveived < bytes expected
-	
+
 	bytesReceived = 0;
 	//Receive buffer based on size received
 	do

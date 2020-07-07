@@ -3,9 +3,10 @@
 #include <iostream>
 #include <string>
 #include <WS2tcpip.h>
+#include <conio.h>
+#include <Windows.h>
+#include <thread>
 #include <stdint.h>
-#include "CMainWindow.h"
-#include <fstream>
 #pragma comment(lib, "ws2_32.lib")
 
 typedef struct sockaddr_in SA_IN;
@@ -15,8 +16,6 @@ typedef struct sockaddr SA;
 
 using namespace std;
 
-
-
 class Socket
 {
 private:
@@ -24,16 +23,41 @@ private:
 	SA_IN hint;
 public: 
 	Socket() {
+		// Initialize WinSock
+		WSADATA wsData;
+		WORD ver = MAKEWORD(2, 2);
+		int wsResult = WSAStartup(ver, &wsData);
+		if (wsResult != 0)
+		{
+			cerr << "Can't start Winsock, Err #" << wsResult << endl;
+			WSACleanup();
+		}
+		
+		WORD wVersionRequested = MAKEWORD(2, 2);// version
+		int wsOk = WSAStartup(wVersionRequested, &wsData);
+		if (wsOk != 0) {
+			cerr << "Start up failed!! Quitting" << endl;;
+			WSACleanup();
+			//return 0;
+		}
+
+		if (LOBYTE(wsData.wVersion) != LOBYTE(wVersionRequested) ||
+			HIBYTE(wsData.wVersion) != HIBYTE(wVersionRequested))
+		{
+			cout << "Supported version is too low" << endl;
+			WSACleanup();
+			//return 0;
+		}
 		hint.sin_family = AF_INET;
 		hint.sin_port = htons(54000);
-		hint.sin_addr.S_un.S_addr = INADDR_ANY;
-	}
+		hint.sin_addr.s_addr = htonl(INADDR_ANY);
+		
+	};
 
-	~Socket() {}
+	~Socket() {};
 
 	SOCKET GetSock() {return sock;}
 	SA_IN GetSA_IN() {return hint;}
-	void SetSocket(SOCKET s) {sock = s;}
 
 	// initialize socket
 	void Initialize(int port) {
@@ -79,10 +103,7 @@ public:
 		return connect(sock, (SA*)&hint, sizeof(hint));
 	}
 	// disconnect socket
-	void Disconnect() {
-		closesocket(sock);
-		WSACleanup();
-	}
+	void Disconnect() {closesocket(sock);}
 
 	void Error(const char* err) {
 		ErrorExit(err, WSAGetLastError());
@@ -93,12 +114,12 @@ public:
 	*/
 	void ErrorExit(const char* format, ...)
 	{
-		CMainWindow c;
 		va_list	args;
-		string err;
+
 		va_start(args, format);
+		string err;
 		err.append(format);
-		c.drawNotification(err);
+		cout << err << endl;
 		va_end(args);
 		WSACleanup();
 		system("pause");
@@ -107,7 +128,5 @@ public:
 };
 
 int Send(SOCKET receiver, const char* buffer, int32_t size, int flag);
-int Send_s(SOCKET receiver, const string& buffer, int flag);
+int Send_s(SOCKET receiver,const string& buffer, int flag);
 int Recv(SOCKET sender, char* buffer, int32_t size, int flag);
-string GetFileName(const string& dir);
-int SendFile(const SOCKET& freceiver, const string& dir);

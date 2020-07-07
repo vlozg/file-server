@@ -112,7 +112,7 @@ void ServerListenning(Server server) {
 int main()
 {
 	//initialize winsock
-	WSADATA wsData;
+	/*WSADATA wsData;
 	WORD wVersionRequested = MAKEWORD(2, 2);// version
 	int wsOk = WSAStartup(wVersionRequested, &wsData);
 	if (wsOk != 0) {
@@ -126,8 +126,8 @@ int main()
 		cout << "Supported version is too low" << endl;
 		WSACleanup();
 		return 0;
-	}
-
+	}*/
+	
 	/*myHostInfo serverInfo;
 	cout << "Host Name: " << serverInfo.getHostName() << endl;
 	cout << "Host IP Address: " << serverInfo.getHostIPAddress() << endl;*/

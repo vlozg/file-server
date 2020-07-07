@@ -7,6 +7,7 @@ void main()
 	int port;						// Listening port # on the server
 
 	// Initialize WinSock
+	/*
 	WSAData data;
 	WORD ver = MAKEWORD(2, 2);
 	int wsResult = WSAStartup(ver, &data);
@@ -14,8 +15,8 @@ void main()
 	{
 		cerr << "Can't start Winsock, Err #" << wsResult << endl;
 		return;
-	}
-
+	}*/
+	
 	//Initialize client socket connection (login not included)
 	Client client;
 	bool LogIn = true;

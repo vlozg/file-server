@@ -96,6 +96,8 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>uafxcwd.lib;Libcmtd.lib</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>uafxcwd.lib;Libcmtd.lib</IgnoreSpecificDefaultLibraries>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>

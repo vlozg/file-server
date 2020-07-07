@@ -2,7 +2,6 @@
 
 
 // CMFCMainDlg dialog
-
 class CMFCMainDlg : public CDialogEx
 {
 	DECLARE_DYNAMIC(CMFCMainDlg)
@@ -37,3 +36,4 @@ public:
 
 	afx_msg void OnBnClickedUploadButton();
 };
+

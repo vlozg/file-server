@@ -40,10 +40,23 @@ BOOL CMFCMainDlg::OnInitDialog()
 
     // Add "About..." menu item to system menu.
 
-   // client.SetPrintNotiFunction();
+    client.TurnOnNotiHandle(this, &CMFCMainDlg::addActivity);
+    //draw Notification list
     notiListCtrl.SetExtendedStyle(LVS_EX_GRIDLINES);
     notiListCtrl.InsertColumn(0, _T("Activity"), LVCFMT_LEFT, 200);
     notiListCtrl.InsertColumn(1, _T("Time"), LVCFMT_LEFT, 210);
+    //draw file list
+    string fileDB;
+    client.DownloadCall(fileDB);
+    ifstream db(fileDB);
+    string temp;
+    int count = 0;
+    while (getline(db, temp))
+    {   
+        CString filename(temp.c_str());
+        listFileCtrl.AddString(filename);
+    }
+    db.close();
 
     // TODO: Add extra initialization here
 
@@ -108,15 +121,28 @@ void CMFCMainDlg::OnBnClickedSignoutButton()
 void CMFCMainDlg::OnBnClickedDownloadButton()
 {
     // TODO: Add your control notification handler code here
+
+    //getfile
+    int sel = listFileCtrl.GetCurSel();
+    if (sel < 0) {
+        MessageBox(
+        (LPCWSTR)L"Choose a file before pressing download",
+        (LPCWSTR)L"Error",
+        MB_ICONERROR);
+        return;
+    }
+    CString filename;
+    listFileCtrl.GetText(sel, filename);
+    string filename_str(CW2A(filename.GetString()));
+
+    //get save folder
     CString folderPath;
     CFolderPickerDialog folderDlg;
     folderDlg.DoModal();
     folderPath.Empty();
     folderPath = folderDlg.GetPathName();
-
-    //Handle Download
-
-
+    string folder_str(CW2A(folderPath.GetString()));
+    client.GetFile(filename_str, folder_str);
 }
 
 //Choose folder to load file
@@ -179,7 +205,13 @@ void CMFCMainDlg::OnBnClickedUploadButton()
     }
     string filepath(CW2A(v_filePath.GetString()));
     client.UploadCall();
-    client.SendFile(client.GetSocket().GetSock(), filepath);
+    if (client.SendFile(client.GetSocket().GetSock(), filepath)) {
+        MessageBox(_T("Upload Success"));
+    }
+    else {
+        CString noti(client.GetLastError().c_str());
+        MessageBox(noti);
+    }
     v_filePath.Empty();
     UpdateData(FALSE);
 }

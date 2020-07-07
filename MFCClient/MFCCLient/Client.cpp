@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Client.h"
 
 /*
@@ -61,7 +62,6 @@ bool Client::SignIn(string& name, string& pass)
 	if (signInRes[0] == '1')
 	{
 		username = name;
-		notiThread = new thread(&Client::NotiHandle, this);
 		return true;
 	}
 	else
@@ -112,10 +112,14 @@ void Client::SignOut()
 /*
 This function check every package and handle if it's a notification
 */
-void Client::NotiHandle()
+template <class T>
+void Client::NotiHandle(T* p, void(T::* pFunc)(string))
 {
 	char buffer[BUFFER_SIZE];
 	int bytesReceived = 0;
+
+	while (username.length == 0);
+
 	isNotiListenOn = true;
 	while (isNotiListenOn)
 	{
@@ -151,7 +155,9 @@ void Client::NotiHandle()
 
 		lck.unlock();
 
-		if (pPrintNoti != NULL) (*pPrintNoti)(buffer + 1);
+		//Call function that print notification
+		if (pFunc != NULL && p != NULL)
+			(p->*pFunc)(buffer + 1);
 	}
 
 	notiHandle = false;
@@ -444,7 +450,11 @@ int Client::SendFile(const SOCKET& freceiver, const string& dir)
 	string userInput;
 	int sendResult;
 	long long int length;
-
+	if (Send_s(clientSocket.GetSock(), "Download", 0) == SOCKET_ERROR)
+	{
+		SocketError();
+		return -1;
+	}
 	//Send file name
 	sendResult = Send_s(freceiver, GetFileName(dir), 0);
 	if (sendResult == SOCKET_ERROR) {

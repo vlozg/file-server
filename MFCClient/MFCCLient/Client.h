@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <condition_variable>
 #include "Socket.h"
+#include "CMFCMainDlg.h"
 
 using namespace std;
 
@@ -23,7 +24,6 @@ private:
 	//Flags, true mean allow 2nd thread peek and process every packet
 	bool notiHandle = false;
 	bool isNotiListenOn = false;
-	void(*pPrintNoti) (string) = NULL;
 
 	string lastError;
 
@@ -60,21 +60,25 @@ public:
 		}
 		return 1;
 	}
-	int DownloadCall() {
+	int DownloadCall(string& db) {
 		//Send flag to server
-		if (Send_s(clientSocket.GetSock(), "Download", 0) == SOCKET_ERROR)
+		/*if (Send_s(clientSocket.GetSock(), "Download", 0) == SOCKET_ERROR)
 		{
 			SocketError();
 			return -1;
-		}
+		}*/
+
+		GetFile(db, "");
 		return 1;
 	}
 
 	int GetFile(string& fileName, const string& dir);
 	int SendFile(const SOCKET& freceiver, const string& dir);
 
-	void NotiHandle();
-	void SetPrintNotiFunction(void(*f)(string)) { pPrintNoti = f; }
+	template <class T>
+	void NotiHandle(T* p, void(T::* pFunc)(string));
+	template <class T>
+	void TurnOnNotiHandle(T* p, void(T::* pFunc)(string)) { notiThread = new thread(&Client::NotiHandle, this, p, pFunc); }
 	void TurnOffNotiHandle() { isNotiListenOn = false; }
 	int Recv_NonNoti(char* buffer, int32_t size, int flag);
 	int Recv_NonNoti(string& buffer, int flag);

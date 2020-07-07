@@ -24,6 +24,8 @@ private:
 	bool notiHandle = false;
 	bool isNotiListenOn = false;
 
+	bool uploadAllow = true;
+
 	string lastError;
 
 public:
@@ -119,9 +121,20 @@ public:
 
 			lck.unlock();
 
-			//Call function that print notification
-			if (pFunc != NULL && p != NULL)
-				(p->*pFunc)(buffer + 1);
+			if (buffer[1] == 'F')
+			{
+				uploadAllow = false;
+			}
+			else if (buffer[1] == 'T')
+			{
+				uploadAllow = true;
+			}
+			else
+			{
+				//Call function that print notification
+				if (pFunc != NULL && p != NULL)
+					(p->*pFunc)(buffer + 1);
+			}
 		}
 
 		notiHandle = false;

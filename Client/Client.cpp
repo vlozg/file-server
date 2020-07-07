@@ -103,9 +103,6 @@ void Client::SignOut()
 {
 	Send_s(clientSocket.GetSock(), "Disconnect", 0);
 	isConnected = false;
-	isNotiListenOn = false;
-	notiThread->join();
-	delete notiThread;
 }
 
 /*

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Client.h"
 
 /*
@@ -8,8 +9,31 @@
 */
 bool Client::Connect(string ipAddress, int port)
 {
+	portServer = port;
+	ipServer = ipAddress;
+
 	clientSocket.Initialize(port);
 	if (clientSocket.Connect(ipAddress) == SOCKET_ERROR)
+	{
+		//Must close socket in order to be able to call connect again
+		clientSocket.Disconnect();
+		SocketError();
+		return false;
+	}
+	isConnected = true;
+	return true;
+}
+
+/*
+	Connect to server using the given address from last call of Connect
+	Return false if the connection failed
+
+	(error can be retrived with GetLastError)
+*/
+bool Client::ReConnect()
+{
+	clientSocket.Initialize(portServer);
+	if (clientSocket.Connect(ipServer) == SOCKET_ERROR)
 	{
 		//Must close socket in order to be able to call connect again
 		clientSocket.Disconnect();
@@ -29,9 +53,8 @@ void Client::Disconnect()
 	Send_s(clientSocket.GetSock(), "Disconnect", 0);
 	isConnected = false;
 	isNotiListenOn = false;
-	notiThread->join();
-	delete notiThread;
 	clientSocket.Disconnect();
+	TurnOffNotiHandle();
 }
 
 /*
@@ -69,7 +92,7 @@ bool Client::SignIn(string& name, string& pass)
 
 /*
 	Send sign up request to server
-	Client must sign in in order to 
+	Client must sign in in order to
 */
 bool Client::SignUp(string& name, string& pass)
 {
@@ -101,8 +124,8 @@ bool Client::SignUp(string& name, string& pass)
 */
 void Client::SignOut()
 {
-	Send_s(clientSocket.GetSock(), "Disconnect", 0);
-	isConnected = false;
+	Disconnect();
+	ReConnect();
 }
 
 /*
@@ -122,7 +145,7 @@ int Client::Recv_NonNoti(char* buffer, int32_t size, int flag) {
 	}
 	//cout << "R";
 	covaNoti.notify_one();
-	
+
 	if (bytesReceived == SOCKET_ERROR)
 	{
 		SocketError();
@@ -166,123 +189,42 @@ int Client::Recv_NonNoti(string& buffer, int flag) {
 	return size;
 }
 
-/*
-Control downloading process from server to client (client side)
-(include calling UI function and process function)
-Parameter:
--	client: client's socket
+/* function handle Send File name to server and wait for
+	server to send the file
+	param:
+		string filename: name of file
+		string dir: directory to save
+	Return:
+-    1 = successful
+-    -1 = connection error
+-    -2 = error in the middle of file transfer process
 
-Return:
-- 1: successful
-- 0: client disconnected
-- -1: connection error
-
-int Client::GetFileFromServer()
+*/
+int Client::GetFileFromServer(string filename, string dir = "") 
 {
-	char buffer[BUFFER_SIZE];
-	string dir, filename;
-	string fileDB, input;
+	//Checking directory
+	string normDir = "";
+	if (dir != "")
+		if (*(dir.end() - 1) != '\\')
+			normDir = dir + '\\';
+		else
+			normDir = dir;
 
+	string fullDir = dir + '/' + filename;
 
-	//Get file database from server
-	GetFile(fileDB, "");
-	ifstream db(fileDB);
-
-	//Get wanted files
-	cout << "Choose file to download:\n"
-		<< "Tip: you can enter multiple choices with each choice seperated\n"
-		<< "from the orthers by a space.\n";
-
-	string temp;
-	int count = 0;
-	while (getline(db, temp))
-	{
-		count++;
-		cout << count << ". " << temp << "\n";
-	}
-	db.close();
-	remove(fileDB.c_str());	//Remove db file in client after reading data success
-
-	//DB have no file
-	if (count == 0)
-	{
-		cout << "Server is empty, please upload any file first to be able to download.\n"
-			<< "Press any key to go back\n";
-		int sendResult = Send_s(clientSocket.GetSock(), "", 0);
-		if (sendResult == SOCKET_ERROR) {
-			isConnected = false;
-			return -3; //server down
-		}
-		_getch();
-		return 1;
-	}
-	cout << "> ";
-	cin >> ws;
-	getline(cin, input);
-
-	//Get wanted diractory
-	cout << "\nType in the directory you want your file to be saved in:\n"
-		<< "Precaution: this apply to all the file you choose.\n"
-		<< "> ";
-	cin >> ws;
-	getline(cin, dir);
-
-	struct stat info;
-	//validate directory
-	while (1) {
-		const char* d = dir.c_str();
-		if (stat(d, &info) != 0) {
-			cout << "Can not regconize your dir!!! Insert Again: ";
-			cin >> ws;
-			getline(cin, dir);
-		}
-		else {
-			break;
-		}
+	//Send filename to server
+	int sendRes = Send(clientSocket.GetSock(), fullDir.c_str(), fullDir.size(), 0);
+	if (sendRes != 1) {
+		return sendRes;
 	}
 
-	if (*dir.begin() == '\"')
-		dir.erase(dir.begin());
-	if (*(dir.end() - 1) == '\"')
-		dir.erase(dir.end() - 1);
-
-	//List all the wanted files and send to server
-	stringstream userChoices(input);
-	int i = 0, index;
-	while (userChoices.good())
-	{
-		userChoices >> index;
-		buffer[i++] = index;
-	}
-	buffer[i] = '\0';
-
-	int sendResult = Send(clientSocket.GetSock(), buffer, i + 1, 0);
-	if (sendResult == SOCKET_ERROR) {
-		isConnected = false;
-		return -3; //server down
-	}
-
-	while (i > 0)
-	{
-		int err = GetFile(temp, dir);
-		switch (err)
-		{
-		case 1:
-			cout << temp << " downloaded successful!\n";
-			i--;
-			break;
-		case -1:
-			return -1;
-		case -2:
-			return -2;
-		default:
-			break;
-		}
-	}
-
+	//Get the file from server
+	string tmp;
+	int res = GetFile(tmp, normDir);
+	if (res < 0)
+		return -1;
 	return 1;
 }
-*/
 
 /*
 Getting file process
@@ -328,7 +270,7 @@ int Client::GetFile(string& fileName, const string& dir)
 	ofstream out(normDir + fileName, ios::trunc | ios::binary);
 
 	//Receiving file loop
-	while (length > 0) 
+	while (length > 0)
 	{
 		//Waiting for data
 		Recv_NonNoti(buffer, bytesReceived, 0);
@@ -338,7 +280,7 @@ int Client::GetFile(string& fileName, const string& dir)
 			out.write(buffer, (BUFFER_SIZE - 1));
 		else
 			out.write(buffer, length);
-		
+
 		length -= (BUFFER_SIZE - 1);
 	}
 
@@ -377,7 +319,7 @@ Parameter:
 
 Return:
 -    1 = successful
--   -1 = error, call GetLastError function to get error detail 
+-   -1 = error, call GetLastError function to get error detail
 */
 int Client::SendFile(const SOCKET& freceiver, const string& dir)
 {

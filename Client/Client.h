@@ -16,6 +16,8 @@ private:
 	string username;
 	Socket clientSocket;
 	bool isConnected = false;
+	string ipServer;
+	int portServer;
 
 	thread* notiThread;
 	mutex mutex_;
@@ -23,8 +25,6 @@ private:
 	//Flags, true mean allow 2nd thread peek and process every packet
 	bool notiHandle = false;
 	bool isNotiListenOn = false;
-
-	bool uploadAllow = true;
 
 	string lastError;
 
@@ -43,6 +43,7 @@ public:
 
 	void Create(int port) { clientSocket.Initialize(port); }
 	bool Connect(string ipAddress, int port);
+	bool ReConnect();
 	void Disconnect();
 	bool IsConnected() { return isConnected; }
 
@@ -76,11 +77,13 @@ public:
 	int GetFile(string& fileName, const string& dir);
 	int SendFile(const SOCKET& freceiver, const string& dir);
 
+	int GetFileFromServer(string filename, string dir = "");
+
 	/*
 	This function check every package and handle if it's a notification
 	*/
 	template <class T>
-	void NotiHandle(T* p, void(T::*pFunc)(string)) {
+	void NotiHandle(T* p, void(T::* pFunc)(string)) {
 		char buffer[BUFFER_SIZE];
 		int bytesReceived = 0;
 
@@ -91,7 +94,8 @@ public:
 		{
 			//cout << "Noti wait\n";
 			unique_lock<mutex> lck(mutex_);
-			covaNoti.wait(lck, [this] { return (notiHandle); });
+			covaNoti.wait(lck, [this] { return (notiHandle || !isNotiListenOn); });
+			if (!isNotiListenOn) break;
 			//cout << "Noti awake\n";
 
 			//Peek into every packet
@@ -121,20 +125,9 @@ public:
 
 			lck.unlock();
 
-			if (buffer[1] == 'F')
-			{
-				uploadAllow = false;
-			}
-			else if (buffer[1] == 'T')
-			{
-				uploadAllow = true;
-			}
-			else
-			{
-				//Call function that print notification
-				if (pFunc != NULL && p != NULL)
-					(p->*pFunc)(buffer + 1);
-			}
+			//Call function that print notification
+			if (pFunc != NULL && p != NULL)
+				(p->*pFunc)(buffer + 1);
 		}
 
 		notiHandle = false;
@@ -148,11 +141,15 @@ public:
 	}
 
 	template <class T>
-	void TurnOnNotiHandle(T* p, void(T::* pFunc)(string)) { notiThread = new thread(&NotiHandle<T>, this, p, pFunc); }
-	void TurnOffNotiHandle() { 
+	void TurnOnNotiHandle(T* p, void(T::* pFunc)(string)) { notiThread = new thread(&Client::NotiHandle<T>, this, p, pFunc); }
+	void TurnOffNotiHandle() {
 		isNotiListenOn = false;
-		notiThread->join();
-		delete notiThread; 
+		covaNoti.notify_one();
+		if (notiThread != NULL)
+		{
+			notiThread->join();
+			delete notiThread;
+		}
 	}
 	int Recv_NonNoti(char* buffer, int32_t size, int flag);
 	int Recv_NonNoti(string& buffer, int flag);

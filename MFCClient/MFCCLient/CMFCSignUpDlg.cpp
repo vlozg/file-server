@@ -104,13 +104,13 @@ void CMFCSignUpDlg::OnBnClickedSignup1Button()
 			MB_ICONWARNING);
 		return;
 	}
-	else if (res == -1) {
+	/*else if (res == -1) {
 		MessageBox(
 		(LPCWSTR)L"Server is not available\n         Try again!!",
 		(LPCWSTR)L"Notification",
 		MB_ICONWARNING);
 		return;
-	}
+	}*/
 
 
 	//return to signin menu

@@ -47,7 +47,7 @@ BOOL CMFCMainDlg::OnInitDialog()
     notiListCtrl.InsertColumn(1, _T("Time"), LVCFMT_LEFT, 210);
     //draw file list
     string fileDB;
-    client.DownloadCall(fileDB);
+   /* client.DownloadCall(fileDB);
     ifstream db(fileDB);
     string temp;
     int count = 0;
@@ -56,7 +56,7 @@ BOOL CMFCMainDlg::OnInitDialog()
         CString filename(temp.c_str());
         listFileCtrl.AddString(filename);
     }
-    db.close();
+    db.close();*/
 
     // TODO: Add extra initialization here
 
@@ -104,12 +104,7 @@ END_MESSAGE_MAP()
 void CMFCMainDlg::OnBnClickedSignoutButton()
 {
 	// TODO: Add your control notification handler code here
-	//handle
-    client.Disconnect();
-	//sign out
-    //NotiListen.join();
-   
-    //client.mainDlg = NULL;
+    client.SignOut();
 	CMFCSignInDlg newDlg;
 	this->~CMFCMainDlg();
 	newDlg.DoModal();
@@ -141,6 +136,9 @@ void CMFCMainDlg::OnBnClickedDownloadButton()
     folderDlg.DoModal();
     folderPath.Empty();
     folderPath = folderDlg.GetPathName();
+    if (folderPath.IsEmpty()) {
+        return;
+    }
     string folder_str(CW2A(folderPath.GetString()));
     client.GetFile(filename_str, folder_str);
 }

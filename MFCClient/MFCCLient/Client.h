@@ -62,11 +62,11 @@ public:
 	}
 	int DownloadCall(string& db) {
 		//Send flag to server
-		/*if (Send_s(clientSocket.GetSock(), "Download", 0) == SOCKET_ERROR)
+		if (Send_s(clientSocket.GetSock(), "Download", 0) == SOCKET_ERROR)
 		{
 			SocketError();
 			return -1;
-		}*/
+		}
 
 		GetFile(db, "");
 		return 1;
@@ -75,11 +75,73 @@ public:
 	int GetFile(string& fileName, const string& dir);
 	int SendFile(const SOCKET& freceiver, const string& dir);
 
+	/*
+	This function check every package and handle if it's a notification
+	*/
 	template <class T>
-	void NotiHandle(T* p, void(T::* pFunc)(string));
+	void NotiHandle(T* p, void(T::*pFunc)(string)) {
+		char buffer[BUFFER_SIZE];
+		int bytesReceived = 0;
+
+		while (username.length() == 0);
+
+		isNotiListenOn = true;
+		while (isNotiListenOn)
+		{
+			//cout << "Noti wait\n";
+			unique_lock<mutex> lck(mutex_);
+			covaNoti.wait(lck, [this] { return (notiHandle); });
+			//cout << "Noti awake\n";
+
+			//Peek into every packet
+			//Only accept if peek enough bytes to check
+			do
+			{
+				bytesReceived = recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, MSG_PEEK);
+
+				if (bytesReceived == SOCKET_ERROR)
+					goto ErrorOccur;
+
+			} while (bytesReceived < (sizeof(int32_t) + 1));
+
+			if (buffer[sizeof(int32_t)] != '1')	//Check for noti flag
+			{
+				notiHandle = false;
+				//cout << "N";
+				lck.unlock();
+				covaRecv.notify_one();	//Notify when detect data packet
+				continue;
+			}
+
+			bytesReceived = Recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, 0);
+
+			if (bytesReceived == SOCKET_ERROR)
+				goto ErrorOccur;
+
+			lck.unlock();
+
+			//Call function that print notification
+			if (pFunc != NULL && p != NULL)
+				(p->*pFunc)(buffer + 1);
+		}
+
+		notiHandle = false;
+		return;
+
+	ErrorOccur:
+		notiHandle = false;
+		isNotiListenOn = false;
+		SocketError();
+		return;
+	}
+
 	template <class T>
-	void TurnOnNotiHandle(T* p, void(T::* pFunc)(string)) { notiThread = new thread(&Client::NotiHandle, this, p, pFunc); }
-	void TurnOffNotiHandle() { isNotiListenOn = false; }
+	void TurnOnNotiHandle(T* p, void(T::* pFunc)(string)) { notiThread = new thread(&Client::NotiHandle<T>, this, p, pFunc); }
+	void TurnOffNotiHandle() { 
+		isNotiListenOn = false;
+		notiThread->join();
+		delete notiThread; 
+	}
 	int Recv_NonNoti(char* buffer, int32_t size, int flag);
 	int Recv_NonNoti(string& buffer, int flag);
 };

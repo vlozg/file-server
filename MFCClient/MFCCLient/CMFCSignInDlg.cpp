@@ -85,15 +85,15 @@ void CMFCSignInDlg::OnBnClickedSigninButton()
 		MB_ICONWARNING );
 		return;
 	}
-	if (!client.GetLastError().empty()) {
+	/*if (!client.GetLastError().empty()) {
 		CString noti(client.GetLastError().c_str());
 		MessageBox(
 		(LPCWSTR)noti,
 		(LPCWSTR)L"ERROR",
 		MB_ICONERROR);
 		return;
-	}
-	//notification listen thread;
+	}*/
+	//sign in success
 	MessageBox(_T("Sign in Success!!")); 
 	CMFCMainDlg newDlg;
 	this->~CMFCSignInDlg();

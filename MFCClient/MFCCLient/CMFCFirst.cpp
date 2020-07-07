@@ -207,6 +207,7 @@ void CMFCFirst::OnBnClickedButtonConnect()
 		case IDCANCEL:
 			OnCancel();
 			this->~CMFCFirst();
+			break;
 		//reConnect
 		case IDTRYAGAIN:
 			OnBnClickedButtonConnect();

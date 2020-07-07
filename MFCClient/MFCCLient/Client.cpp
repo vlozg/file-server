@@ -104,70 +104,6 @@ void Client::SignOut()
 {
 	Send_s(clientSocket.GetSock(), "Disconnect", 0);
 	isConnected = false;
-	isNotiListenOn = false;
-	notiThread->join();
-	delete notiThread;
-}
-
-/*
-This function check every package and handle if it's a notification
-*/
-template <class T>
-void Client::NotiHandle(T* p, void(T::* pFunc)(string))
-{
-	char buffer[BUFFER_SIZE];
-	int bytesReceived = 0;
-
-	while (username.length == 0);
-
-	isNotiListenOn = true;
-	while (isNotiListenOn)
-	{
-		//cout << "Noti wait\n";
-		unique_lock<mutex> lck(mutex_);
-		covaNoti.wait(lck, [this] { return (notiHandle); });
-		//cout << "Noti awake\n";
-
-		//Peek into every packet
-		//Only accept if peek enough bytes to check
-		do
-		{
-			bytesReceived = recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, MSG_PEEK);
-
-			if (bytesReceived == SOCKET_ERROR)
-				goto ErrorOccur;
-
-		} while (bytesReceived < (sizeof(int32_t) + 1));
-
-		if (buffer[sizeof(int32_t)] != '1')	//Check for noti flag
-		{
-			notiHandle = false;
-			//cout << "N";
-			lck.unlock();
-			covaRecv.notify_one();	//Notify when detect data packet
-			continue;
-		}
-
-		bytesReceived = Recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, 0);
-
-		if (bytesReceived == SOCKET_ERROR)
-			goto ErrorOccur;
-
-		lck.unlock();
-
-		//Call function that print notification
-		if (pFunc != NULL && p != NULL)
-			(p->*pFunc)(buffer + 1);
-	}
-
-	notiHandle = false;
-	return;
-
-ErrorOccur:
-	notiHandle = false;
-	isNotiListenOn = false;
-	SocketError();
-	return;
 }
 
 /*
@@ -450,11 +386,7 @@ int Client::SendFile(const SOCKET& freceiver, const string& dir)
 	string userInput;
 	int sendResult;
 	long long int length;
-	if (Send_s(clientSocket.GetSock(), "Download", 0) == SOCKET_ERROR)
-	{
-		SocketError();
-		return -1;
-	}
+
 	//Send file name
 	sendResult = Send_s(freceiver, GetFileName(dir), 0);
 	if (sendResult == SOCKET_ERROR) {

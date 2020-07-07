@@ -28,6 +28,8 @@ private:
 
 	string lastError;
 
+	bool uploadAllow = true;
+
 public:
 
 	Client() {};
@@ -78,6 +80,7 @@ public:
 	int SendFile(const SOCKET& freceiver, const string& dir);
 
 	int GetFileFromServer(string filename, string dir = "");
+	bool isUploadAllowed(){ return uploadAllow; }
 
 	/*
 	This function check every package and handle if it's a notification
@@ -125,9 +128,20 @@ public:
 
 			lck.unlock();
 
-			//Call function that print notification
-			if (pFunc != NULL && p != NULL)
-				(p->*pFunc)(buffer + 1);
+			if (buffer[1] == 'F')
+			{
+				uploadAllow = false;
+			}
+			else if (buffer[1] == 'T')
+			{
+				uploadAllow = true;
+			}
+			else
+			{
+				//Call function that print notification
+				if (pFunc != NULL && p != NULL)
+					(p->*pFunc)(buffer + 1);
+			}
 		}
 
 		notiHandle = false;

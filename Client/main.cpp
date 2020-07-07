@@ -20,6 +20,7 @@ void main()
 	Client client;
 	bool LogIn = true;
 	int clientChoice;
+
 	while (1) {
 		//get server address and port
 	changeIP:
@@ -54,14 +55,15 @@ void main()
 		else
 			break;
 	}
+	thread NotiListen(&Client::NotiHandle, &client);
 	//Main loop
 	while (1) {
 		if (!LogIn) {
 			client.Create(port);
 			client.Connect(ipAddress);
 			LogIn = true;
+			NotiListen = thread(&Client::NotiHandle, &client);
 		}
-		thread NotiListen = thread(&Client::NotiHandle, &client);
 		if (!client.IsConnected())
 			goto reconnect;
 		cout << "1. Upload a file to server !!! " << endl;

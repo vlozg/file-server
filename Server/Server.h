@@ -16,10 +16,17 @@ private:
 	Socket serverSocket;
 	vector <Client> onlineConnection;
 
-public:
+	bool isUploading = false;
+public: 
 	CMainWindow c;
 	Socket GetSocket() {
 		return serverSocket;
+	}
+	bool isUpload() {
+		return isUploading;
+	}
+	void setUploadState(bool newState) {
+		isUploading = newState;
 	}
 
 	/*
@@ -73,11 +80,21 @@ public:
 	vector<string> InputFileToSend(const SOCKET& client);
 	int SendFileToClient(Client& client);
 
-	void SendNoti(string noti) {
+	void SendNoti(string noti,string except =  "",string direct = "") {
 		noti = "1" + noti;
 
+
 		for (int i = 0; i < onlineConnection.size(); i++) {
-			Send_s(onlineConnection[i].GetSocket().GetSock(), noti, 0);
+			if (direct != "" && direct != onlineConnection[i].GetUsername()) {
+				continue;
+			}
+			else if (direct != "" && direct == onlineConnection[i].GetUsername()) {
+				Send_s(onlineConnection[i].GetSocket().GetSock(), noti, 0);
+				break;
+			}
+			if (except != onlineConnection[i].GetUsername())
+				Send_s(onlineConnection[i].GetSocket().GetSock(), noti, 0);
+			
 		}
 	}
 
@@ -123,6 +140,7 @@ public:
 	void Shutdown() {
 		serverSocket.Disconnect();
 	}
+
 
 	Server() {	};
 	~Server() {

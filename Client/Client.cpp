@@ -18,7 +18,8 @@ bool Client::Connect(string ipAddress) {
 		case 1:
 			if (!SignIn()) {
 				UI.drawSignNotification(1);
-			}else
+			}
+			else
 				outLoop = true;
 			break;
 		case 2:
@@ -44,17 +45,17 @@ bool Client::SignIn() {
 	string notification = "SignIn";
 	do {
 		//Send sign in notification to Server
-		Send_s(clientSocket.GetSock(), notification, 0);		
-		
+		Send_s(clientSocket.GetSock(), notification, 0);
+
 		//send account information to Server
 		int sendResultUsername = Send_s(clientSocket.GetSock(), username, 0);
-		
+
 		int sendResultPassword = Send_s(clientSocket.GetSock(), password, 0);
 		if (sendResultUsername != SOCKET_ERROR && sendResultPassword != SOCKET_ERROR) {
-			
+
 			string signInRes;
 			int size;
-			Recv_NonNoti(signInRes,0);
+			Recv_NonNoti(signInRes, 0);
 
 			if (signInRes[0] == '1') {
 				return true;		// Breakout the loop
@@ -84,11 +85,11 @@ bool Client::SignUp() {
 		int sendResult = Send_s(clientSocket.GetSock(), username, 0);		//Send sign up notification to Server
 		sendResult = Send_s(clientSocket.GetSock(), password, 0);
 		if (sendResult != SOCKET_ERROR) {
-			
+
 			string signUpRes;
 			int size;
-			Recv_NonNoti(signUpRes,0);
-			
+			Recv_NonNoti(signUpRes, 0);
+
 			if (signUpRes[0] == '1') {
 				return true;
 			}
@@ -113,7 +114,7 @@ void Client::NotiHandle()
 	char buffer[BUFFER_SIZE];
 	int bytesReceived = 0;
 	isNotiListenOn = true;
-	while (bytesReceived != SOCKET_ERROR) 
+	while (bytesReceived != SOCKET_ERROR)
 	{
 		//cout << "Noti wait\n";
 		unique_lock<mutex> lck(mutex_);
@@ -124,7 +125,7 @@ void Client::NotiHandle()
 		do
 		{
 			bytesReceived = recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, MSG_PEEK);
-		
+
 			if (bytesReceived == SOCKET_ERROR)
 			{
 				//cout << "error here! with error code " << WSAGetLastError() << endl;
@@ -141,16 +142,24 @@ void Client::NotiHandle()
 			covaRecv.notify_one();	//Notify when detect data packet
 			continue;
 		}
-		
+
 		bytesReceived = Recv(clientSocket.GetSock(), buffer, BUFFER_SIZE, 0);
-		
+
 		if (bytesReceived == SOCKET_ERROR)
 		{
 			//ServerShutdown();
 			goto ErrorOccur;
 		}
 		lck.unlock();
-		UI.drawNotification(buffer+1);
+		if (buffer[1] == 'F') {
+			uploadAllow = false;
+		}
+		else if (buffer[1] == 'T') {
+			uploadAllow = true;
+		}
+		else {
+			UI.drawNotification(buffer + 1);
+		}
 	}
 	notiHandle = false;
 	//ServerShutdown();
@@ -197,18 +206,27 @@ Return:
 int Client::SendFileToServer()
 {
 	string fileDir;
+	bool waitNof = false;
+
 	// send signal flag to server
 	string notification = "Upload";
 	if (Send_s(clientSocket.GetSock(), notification, 0) == -1) {
-		isConnected = false; 
+		isConnected = false;
 		return -3; //server down
+	}
+	while (!uploadAllow) {
+		if (!waitNof) {
+			UI.drawNotification("Another client is uploading!!!");
+			UI.drawNotification("Please wait a second !!!");
+			waitNof = true;
+		}
 	}
 	fileDir = InputFileToSend();
 
 	//Get file dir & art file transfering
-	int err = SendFile(clientSocket.GetSock() , fileDir);
+	int err = SendFile(clientSocket.GetSock(), fileDir);
 
-	switch(1)
+	switch (1)
 	{
 	case 1:
 		cout << "Upload successful!\n";
@@ -316,7 +334,7 @@ int Client::GetFileFromServer()
 	{
 		userChoices >> index;
 		buffer[i++] = index;
-	} 
+	}
 	buffer[i] = '\0';
 
 	int sendResult = Send(clientSocket.GetSock(), buffer, i + 1, 0);
@@ -375,7 +393,7 @@ int Client::GetFile(string& fileName, const string& dir)
 
 	//Wait for server to send
 	//Loop until file name received
-		
+
 	Recv_NonNoti(fileName, 0);
 	if (!isConnected) {
 		return -3;
@@ -394,7 +412,7 @@ int Client::GetFile(string& fileName, const string& dir)
 	}
 	//Checking data
 	memcpy(&length, buffer, 8);
-	
+
 	//Checking directory
 	string normDir = "";
 	if (dir != "")
@@ -407,18 +425,18 @@ int Client::GetFile(string& fileName, const string& dir)
 	ofstream out(normDir + fileName, ios::trunc | ios::binary);
 
 	//Receiving file loop
-	while(length>0) {
+	while (length > 0) {
 		ZeroMemory(buffer, BUFFER_SIZE);
 		//Waiting for data
 		Recv_NonNoti(buffer, bytesReceived, 0);
 		if (!isConnected) {
 			return -3;
 		}
-		if (length >= (BUFFER_SIZE-1))
-			out.write(buffer, (BUFFER_SIZE-1));
+		if (length >= (BUFFER_SIZE - 1))
+			out.write(buffer, (BUFFER_SIZE - 1));
 		else
 			out.write(buffer, length);
-		length -= (BUFFER_SIZE-1);
+		length -= (BUFFER_SIZE - 1);
 
 	}
 	return 1;
@@ -467,7 +485,7 @@ int Client::SendFile(const SOCKET& freceiver, const string& dir)
 	long long int length;
 
 	//Send file name
-	sendResult = Send_s(freceiver,GetFileName(dir), 0);
+	sendResult = Send_s(freceiver, GetFileName(dir), 0);
 	if (sendResult == SOCKET_ERROR) {
 		isConnected = false;
 		return -3;

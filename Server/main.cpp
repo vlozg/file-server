@@ -1,9 +1,13 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include "Server.h"
+#include <mutex>
+#include <condition_variable>
 
 vector <thread> clientHandleThread;
 
 Server myServer;
+
+mutex mutex_;
 
 int HandleFlagSignal(string flag) {
 	if (flag.compare("SignIn") == 0) {
@@ -50,6 +54,10 @@ void HandleConnection(SOCKET clientSocket) {
 		string notification;
 		notification.append(buffer);		//convert char* to string
 
+		
+		unique_lock<mutex> lck(mutex_);
+		condition_variable cova_upload;
+
 		switch (HandleFlagSignal(notification)) {
 		case 1:
 			if (myServer.SignIn(client)){ signIn = true; }
@@ -58,7 +66,14 @@ void HandleConnection(SOCKET clientSocket) {
 			myServer.SignUp(client);
 			break;
 		case 3:
+			while (myServer.isUpload()) {
+				cova_upload.wait(lck);
+			}
 			myServer.GetFileFromClient(client);
+			myServer.SendNoti("T");
+			myServer.setUploadState(false);
+			lck.unlock();
+			cova_upload.notify_one();
 			break;
 		case 4:
 			myServer.SendFileToClient(client);
@@ -144,11 +159,11 @@ int main()
 
 	// close server
 	myServer.Shutdown();
-	
+
 	// join all the thread
-	for (int i = 0; i < clientHandleThread.size(); i++){
+	/*for (int i = 0; i < clientHandleThread.size(); i++){
 		clientHandleThread[i].join();
-	}
+	}*/
 	return 0;
 }
 

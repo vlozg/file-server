@@ -22,6 +22,7 @@ private:
 	bool notiHandle = false;	//Flag, true mean allow 2nd thread peek every packet
 	bool isNotiListenOn = false;
 
+	bool uploadAllow = true;
 public:
 	vector <string> fileName;
 	CMenu UI;

@@ -79,6 +79,16 @@ public:
 	int GetFile(string& fileName, const string& dir);
 	int SendFile(const SOCKET& freceiver, const string& dir);
 
+	int GetDB(string& db) {
+		if (Send_s(clientSocket.GetSock(), "GetDB", 0) == SOCKET_ERROR)
+		{
+			SocketError();
+			return -1;
+		}
+
+		GetFile(db, "");
+		return 1;
+	}
 	int GetFileFromServer(string filename, string dir = "");
 	bool isUploadAllowed(){ return uploadAllow; }
 

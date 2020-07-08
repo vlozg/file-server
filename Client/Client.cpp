@@ -258,6 +258,7 @@ int Client::GetFileFromServer()
 	char buffer[BUFFER_SIZE];
 	string dir, filename;
 	string fileDB, input;
+	vector<string> listdb;
 
 	string notification = "Download";
 	if (Send_s(clientSocket.GetSock(), notification, 0) == SOCKET_ERROR) {
@@ -270,9 +271,7 @@ int Client::GetFileFromServer()
 	ifstream db(fileDB);
 
 	//Get wanted files
-	cout << "Choose file to download:\n"
-		<< "Tip: you can enter multiple choices with each choice seperated\n"
-		<< "from the orthers by a space.\n";
+	cout << "Choose file to download:\n";
 
 	string temp;
 	int count = 0;
@@ -280,6 +279,7 @@ int Client::GetFileFromServer()
 	{
 		count++;
 		cout << count << ". " << temp << "\n";
+		listdb.push_back(temp);
 	}
 	db.close();
 	remove(fileDB.c_str());	//Remove db file in client after reading data success
@@ -326,18 +326,19 @@ int Client::GetFileFromServer()
 		dir.erase(dir.begin());
 	if (*(dir.end() - 1) == '\"')
 		dir.erase(dir.end() - 1);
-
+	
 	//List all the wanted files and send to server
 	stringstream userChoices(input);
 	int i = 0, index;
 	while (userChoices.good())
 	{
 		userChoices >> index;
-		buffer[i++] = index;
+		i++;
+		//buffer[i++] = index;
 	}
-	buffer[i] = '\0';
-
-	int sendResult = Send(clientSocket.GetSock(), buffer, i + 1, 0);
+	//buffer[i] = '\0';
+	
+	int sendResult = Send_s(clientSocket.GetSock(), listdb[index-1], 0);
 	if (sendResult == SOCKET_ERROR) {
 		isConnected = false;
 		return -3; //server down
